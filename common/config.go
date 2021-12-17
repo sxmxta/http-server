@@ -1,12 +1,30 @@
-package server
+package common
 
 import (
 	"encoding/json"
 	"io/ioutil"
 )
 
-var serverConfig = make(map[string]string)
-var proxyConfig = make(map[string]string)
+type Config map[string]string
+
+var serverConfig = make(Config)
+var proxyConfig = make(Config)
+var dbConfig = make(Config)
+
+func (m Config) Get(key string) string {
+	return m[key]
+}
+
+func GetServerConfig() Config {
+	return serverConfig
+}
+
+func GetProxyConfig() Config {
+	return proxyConfig
+}
+func GetDBConfig() Config {
+	return dbConfig
+}
 
 func init() {
 	byt, err := ioutil.ReadFile("hs.conf.json")
@@ -21,6 +39,7 @@ func init() {
 	}
 	var serverKey = "server"
 	var proxyKey = "proxy"
+	var databaseKey = "database"
 	var p = data[proxyKey]
 	for k, v := range p.(map[string]interface{}) {
 		var val = v.(map[string]interface{})
@@ -34,6 +53,13 @@ func init() {
 		var val = v.(string)
 		if val != "" {
 			serverConfig[serverKey+"."+k] = val
+		}
+	}
+	var db = data[databaseKey]
+	for k, v := range db.(map[string]interface{}) {
+		var val = v.(string)
+		if val != "" {
+			dbConfig[databaseKey+"."+k] = val
 		}
 	}
 	//fmt.Println("解析 服务 配置")

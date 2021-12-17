@@ -1,10 +1,13 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
+	"http_server/common"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -25,9 +28,68 @@ var contentType = map[string]string{
 
 var sites = "sites"
 
+var routeMapper = make(map[string]HandlerFUNC)
+
+type HandlerFUNC func(ctx *Context)
+
+type Context struct {
+	response http.ResponseWriter
+	request  *http.Request
+	isWrite  bool
+}
+
+func (m *Context) Write(data []byte) {
+	if !m.isWrite {
+		m.isWrite = true
+		m.response.Header().Set("Content-Type", "application/json")
+		m.response.WriteHeader(200)
+		m.response.Write(data)
+	}
+}
+
+func (m *Context) Get(key string) string {
+	var val string
+	val = m.request.URL.Query().Get(key)
+	if val == "" {
+		if m.Form() == nil {
+			m.request.ParseForm()
+		}
+		val = m.Form().Get(key)
+		if val == "" {
+			val = m.PostForm().Get(key)
+		}
+	}
+	return val
+}
+
+func (m *Context) Form() url.Values {
+	return m.request.Form
+}
+
+func (m *Context) PostForm() url.Values {
+	return m.request.PostForm
+}
+
+func (m *Context) GetBody() string {
+	result, err := ioutil.ReadAll(m.request.Body)
+	if err != nil {
+		return "{}"
+	} else {
+		return bytes.NewBuffer(result).String()
+	}
+}
+
+type Handler interface {
+}
+
+func RegisterRoute(route string, handler HandlerFUNC) {
+	fmt.Println("register route -> ", route)
+	routeMapper[route] = handler
+}
+
 func StartHttpServer() {
-	var serverIP = GetServerConf("server.ip")
-	var serverPort = GetServerConf("server.port")
+	var serverIP = common.GetServerConf("server.ip")
+	var serverPort = common.GetServerConf("server.port")
 
 	if serverIP == "" {
 		serverIP = "127.0.0.1"
@@ -49,6 +111,13 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ok, proxyUrl, target := isProxy(path); ok {
 		proxy(proxyUrl, target, w, r)
 	} else {
+		if fn, ok := routeMapper[path]; ok {
+			w.Header().Set("Content-Type", "application/json")
+			ctx := &Context{w, r, false}
+			fn(ctx)
+			ctx.Write(nil)
+			return
+		}
 		if path == "/" {
 			path = "/index.html"
 		}
@@ -124,7 +193,7 @@ func extType(path string) string {
 }
 
 func isProxy(path string) (bool, string, string) {
-	for proxyUrl, v := range proxyConfig {
+	for proxyUrl, v := range common.GetProxyConfig() {
 		if strings.Index(path, proxyUrl) == 0 {
 			return true, proxyUrl, v
 		}

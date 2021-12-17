@@ -10,5 +10,10 @@
     "/home": {
       "target": "http://s.s.snsxm.top"
     }
+  },
+  "database": {
+    "type": "sqlite3",
+    "path": "db/",
+    "name": "mir"
   }
 }

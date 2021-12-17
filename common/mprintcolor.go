@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"syscall"
@@ -18,18 +18,18 @@ type Color struct {
 	blue         int // 蓝色
 	green        int // 绿色
 	cyan         int // 青色
-	red          int // 红色
-	purple       int // 紫色
-	yellow       int // 黄色
-	light_gray   int // 淡灰色（系统默认值）
-	gray         int // 灰色
-	light_blue   int // 亮蓝色
-	light_green  int // 亮绿色
-	light_cyan   int // 亮青色
-	light_red    int // 亮红色
-	light_purple int // 亮紫色
-	light_yellow int // 亮黄色
-	white        int // 白色
+	Red          int // 红色
+	Purple       int // 紫色
+	Yellow       int // 黄色
+	Light_gray   int // 淡灰色（系统默认值）
+	Gray         int // 灰色
+	Light_blue   int // 亮蓝色
+	Light_green  int // 亮绿色
+	Light_cyan   int // 亮青色
+	Light_red    int // 亮红色
+	Light_purple int // 亮紫色
+	Light_yellow int // 亮黄色
+	White        int // 白色
 }
 
 // 输出有颜色的字体
@@ -40,7 +40,7 @@ func ColorPrint(s string, i int) {
 }
 
 func TestColor() {
-	ColorPrint(`红色`, FontColor.red)
+	ColorPrint(`红色`, FontColor.Red)
 	ColorPrint(`蓝色`, FontColor.blue)
-	ColorPrint(`白色`, FontColor.white)
+	ColorPrint(`白色`, FontColor.White)
 }
