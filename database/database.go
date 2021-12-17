@@ -3,7 +3,7 @@ package database
 import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"http_server/common"
+	"http_server/config"
 )
 
 var db *gorm.DB
@@ -12,7 +12,7 @@ func GetDB() *gorm.DB {
 	return db
 }
 func init() {
-	dbConf := common.GetDBConfig()
+	dbConf := config.GetDBConfig()
 	var err error
 	var dbName = dbConf.Get("database.path") + dbConf.Get("database.name") + ".db"
 	//fmt.Println(dbName)

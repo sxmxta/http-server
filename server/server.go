@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"http_server/common"
+	"http_server/config"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -38,12 +39,13 @@ type Context struct {
 	isWrite  bool
 }
 
-func (m *Context) Write(data []byte) {
+func (m *Context) Write(data interface{}) {
 	if !m.isWrite {
 		m.isWrite = true
 		m.response.Header().Set("Content-Type", "application/json")
 		m.response.WriteHeader(200)
-		m.response.Write(data)
+		d, _ := common.ToJson(data)
+		m.response.Write([]byte(fmt.Sprintf(`{"code":%s, "data":"%s"}`, "200", string(d))))
 	}
 }
 
@@ -88,8 +90,8 @@ func RegisterRoute(route string, handler HandlerFUNC) {
 }
 
 func StartHttpServer() {
-	var serverIP = common.GetServerConf("server.ip")
-	var serverPort = common.GetServerConf("server.port")
+	var serverIP = config.GetServerConf("server.ip")
+	var serverPort = config.GetServerConf("server.port")
 
 	if serverIP == "" {
 		serverIP = "127.0.0.1"
@@ -193,7 +195,7 @@ func extType(path string) string {
 }
 
 func isProxy(path string) (bool, string, string) {
-	for proxyUrl, v := range common.GetProxyConfig() {
+	for proxyUrl, v := range config.GetProxyConfig() {
 		if strings.Index(path, proxyUrl) == 0 {
 			return true, proxyUrl, v
 		}

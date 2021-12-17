@@ -34,6 +34,8 @@ func TestSql(t *testing.T) {
 	db.Find(&products)
 	fmt.Printf("%+v \n", products)
 
+
+
 	// 更新操作：更新单个字段
 	db.Model(&product).Update("Price", 2000)
 	fmt.Printf("%+v \n", product)
