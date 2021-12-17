@@ -9,7 +9,7 @@ func list(ctx *server.Context) {
 	fmt.Println(ctx.Get("name"))
 }
 
-func test(ctx *server.Context) {
+func add(ctx *server.Context) {
 	fmt.Println(ctx.Get("name"))
 	ctx.Write([]byte("asdf"))
 }

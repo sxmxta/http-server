@@ -1,9 +1,8 @@
-package main
+package database
 
 import (
 	"fmt"
 	"gorm.io/gorm"
-	"http_server/database"
 	"testing"
 )
 
@@ -16,7 +15,7 @@ type Product struct {
 
 func TestSql(t *testing.T) {
 	// Migrate the schema
-	db := database.GetDB()
+	db := GetDB()
 	db.AutoMigrate(&Product{})
 
 	// 插入内容
