@@ -3,8 +3,8 @@ package server
 import (
 	"bytes"
 	"fmt"
-	"http_server/common"
-	"http_server/config"
+	"gitee.com/snxamdf/http-server/common"
+	"gitee.com/snxamdf/http-server/config"
 	"io"
 	"io/ioutil"
 	"net/http"

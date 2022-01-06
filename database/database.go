@@ -1,9 +1,9 @@
 package database
 
 import (
+	"gitee.com/snxamdf/http-server/config"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"http_server/config"
 )
 
 var db *gorm.DB

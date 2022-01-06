@@ -1,22 +1,12 @@
 package main
 
 import (
-	"flag"
-	"http_server/common"
-	_ "http_server/database"
-	_ "http_server/modules"
-	"http_server/server"
-	"time"
+	"gitee.com/snxamdf/http-server/common"
+	"gitee.com/snxamdf/http-server/server"
 )
 
-func sleep(d int64) {
-	time.Sleep(time.Duration(d) * time.Second)
-}
-
 func main() {
-	flag.Parse()
 	common.ColorPrint("Http Server 启动中......\n", common.FontColor.White)
-	sleep(1)
 	println()
 	common.ColorPrint("免责声明：请不要将该软件做为商业用途，本软件使用过程中造成的损失作者本人概不负责。本软件只做分享学习使用。\n", common.FontColor.Red)
 	println()
@@ -31,9 +21,9 @@ func main() {
 	common.ColorPrint("\t3. 本程序放在指定文件夹做为服务目录\n", common.FontColor.Light_purple)
 	println()
 	common.ColorPrint("▁▂▃▄▅▆▇▉▉▉▉▉▉▉  程序信息  ▉▉▉▉▉▉▇▆▅▄▃▂▁\n", common.FontColor.Light_yellow)
-	common.ColorPrint("作者：YHY\n", common.FontColor.Light_yellow)
-	common.ColorPrint("网址：www.snsxm.top\n", common.FontColor.Light_yellow)
-	common.ColorPrint("Q Q：122798224\n", common.FontColor.Light_yellow)
+	common.ColorPrint("作  者：YHY\n", common.FontColor.Light_yellow)
+	common.ColorPrint("Email：snxamdf@126.com\n", common.FontColor.Light_yellow)
+	common.ColorPrint("Q   Q：122798224\n", common.FontColor.Light_yellow)
 	println()
 	common.ColorPrint("", common.FontColor.White)
 	server.StartHttpServer()
