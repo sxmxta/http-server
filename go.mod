@@ -1,4 +1,4 @@
-module http_server
+module gitee.com/snxamdf/http-server
 
 go 1.16
 
