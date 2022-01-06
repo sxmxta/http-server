@@ -15,9 +15,19 @@ go build -ldflags "-H windowsgui -s -w"
 go build -ldflags "-s -w"
 
 交叉编译 CGO
+#go env -w GO111MODULE=auto
+linux 
+set CC=x86_64-w64-mingw32-gcc
+set CXX=x86_64-w64-mingw32-g++
 set GOARCH=amd64
 set GOOS=linux
+set CGO_ENABLED=1
 go build
+
+windows
+set GOARCH=amd64
+set GOOS=windows
+set CGO_ENABLED=0
 
 wget https://studygolang.com/dl/golang/go1.16.7.linux-amd64.tar.gz
 
