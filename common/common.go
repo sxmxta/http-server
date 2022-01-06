@@ -55,3 +55,12 @@ func ToJson(data interface{}) ([]byte, error) {
 		return r, nil
 	}
 }
+
+func IsEmpty(value ...interface{}) bool {
+	for _, val := range value {
+		if val == "" || val == nil {
+			return true
+		}
+	}
+	return false
+}

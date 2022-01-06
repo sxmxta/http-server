@@ -31,6 +31,13 @@ var sites = "sites"
 
 var routeMapper = make(map[string]HandlerFUNC)
 
+type Route interface {
+}
+
+type Controller struct {
+	ctx *Context
+}
+
 type HandlerFUNC func(ctx *Context)
 
 type Context struct {
@@ -39,13 +46,24 @@ type Context struct {
 	isWrite  bool
 }
 
+func (m *Controller) Context() *Context {
+	return m.ctx
+}
+
 func (m *Context) Write(data interface{}) {
 	if !m.isWrite {
 		m.isWrite = true
 		m.response.Header().Set("Content-Type", "application/json")
 		m.response.WriteHeader(200)
-		d, _ := common.ToJson(data)
-		m.response.Write([]byte(fmt.Sprintf(`{"code":%s, "data":"%s"}`, "200", string(d))))
+		//d, _ := common.ToJson(data)
+		r := make(map[string]interface{})
+		r["code"] = 200
+		r["data"] = data
+		var b, err = common.ToJson(r)
+		if err != nil {
+			fmt.Println(err)
+		}
+		m.response.Write(b)
 	}
 }
 
@@ -72,12 +90,12 @@ func (m *Context) PostForm() url.Values {
 	return m.request.PostForm
 }
 
-func (m *Context) GetBody() string {
+func (m *Context) GetBody() []byte {
 	result, err := ioutil.ReadAll(m.request.Body)
 	if err != nil {
-		return "{}"
+		return []byte("{}")
 	} else {
-		return bytes.NewBuffer(result).String()
+		return bytes.NewBuffer(result).Bytes()
 	}
 }
 
@@ -113,6 +131,13 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ok, proxyUrl, target := isProxy(path); ok {
 		proxy(proxyUrl, target, w, r)
 	} else {
+		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
+		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		//w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		//fmt.Println("请求URL:", path)
+		//if r.Method == "OPTIONS" {
+		//	return
+		//}
 		if fn, ok := routeMapper[path]; ok {
 			w.Header().Set("Content-Type", "application/json")
 			ctx := &Context{w, r, false}
@@ -129,11 +154,6 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		)
 		var filePath = fmt.Sprintf("%s%s", sites, path)
 		byt, err = ioutil.ReadFile(filePath)
-		w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		if r.Method == "OPTIONS" {
-			return
-		}
 		if err != nil {
 			var content = `{"code":"911","data":"未找到内部操作资源"}`
 			w.Header().Set("Content-Type", "application/json")

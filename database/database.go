@@ -11,6 +11,7 @@ var db *gorm.DB
 func GetDB() *gorm.DB {
 	return db
 }
+
 func init() {
 	dbConf := config.GetDBConfig()
 	var err error
