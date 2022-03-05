@@ -1,14 +1,9 @@
+//go:build linux
+// +build linux
+
 package common
 
-import (
-	"syscall"
-)
-
 var (
-	kernel32    *syscall.LazyDLL  = syscall.NewLazyDLL(`kernel32.dll`)
-	proc        *syscall.LazyProc = kernel32.NewProc(`SetConsoleTextAttribute`)
-	CloseHandle *syscall.LazyProc = kernel32.NewProc(`CloseHandle`)
-
 	// 给字体颜色对象赋值
 	FontColor Color = Color{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 )
@@ -34,9 +29,7 @@ type Color struct {
 
 // 输出有颜色的字体
 func ColorPrint(s string, i int) {
-	handle, _, _ := proc.Call(uintptr(syscall.Stdout), uintptr(i))
-	print(s)
-	CloseHandle.Call(handle)
+	println(s)
 }
 
 func TestColor() {
