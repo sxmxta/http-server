@@ -1,7 +1,6 @@
 go env -w GOBIN=C:/Go/bin
 go env -w GO111MODULE=on
-go env -w GOPROXY=https://goproxy.cn,direct
-
+go env -w GOPROXY=https://mirrors.aliyun.com/goproxy,direct
 go mod init
 
 获取所有依赖
