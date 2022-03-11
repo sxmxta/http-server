@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
+	"gitee.com/snxamdf/http-server/src/gui"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -61,7 +63,7 @@ func (m *Context) Write(data interface{}) {
 		r["data"] = data
 		var b, err = common.ToJson(r)
 		if err != nil {
-			fmt.Println(err)
+			gui.Logs(err.Error())
 		}
 		m.response.Write(b)
 	}
@@ -103,7 +105,7 @@ type Handler interface {
 }
 
 func RegisterRoute(route string, handler HandlerFUNC) {
-	fmt.Println("register route -> ", route)
+	gui.Logs("register route -> ", route)
 	routeMapper[route] = handler
 }
 
@@ -118,7 +120,7 @@ func StartHttpServer() {
 		serverPort = "80"
 	}
 	addr := serverIP + ":" + serverPort
-	fmt.Println("http server listen:", addr)
+	gui.Logs("\nHttp Server Listen: ", addr, "\n")
 	mux := http.NewServeMux()
 	mux.Handle("/", &HttpServerHandler{})
 	_ = http.ListenAndServe(addr, mux)
@@ -134,7 +136,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		//w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		//fmt.Println("请求URL:", path)
+		gui.Logs("请求URL:", path)
 		//if r.Method == "OPTIONS" {
 		//	return
 		//}
@@ -180,10 +182,10 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	reqUrl := r.URL.String()
 	reqUrl = reqUrl[len(proxyUrl):]
 	reqUrl = fmt.Sprintf("%s%s", target, reqUrl)
-	fmt.Println("proxy url:", reqUrl, "method:", r.Method)
+	gui.Logs("proxy url:", reqUrl, "method:", r.Method)
 	req, err := http.NewRequest(r.Method, reqUrl, r.Body)
 	if err != nil {
-		fmt.Print("proxy http.NewRequest ", err.Error())
+		gui.Logs("proxy http.NewRequest ", err.Error())
 		return
 	}
 	for k, v := range r.Header {
@@ -193,7 +195,7 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := cli.Do(req)
 	if err != nil {
-		fmt.Println("proxy error:", err.Error())
+		gui.Logs("proxy error:", err.Error())
 		return
 	}
 	defer res.Body.Close()
@@ -203,7 +205,7 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	wi, err := io.Copy(w, res.Body)
-	fmt.Println("proxy response size:", wi, err)
+	gui.Logs("proxy response size:", strconv.Itoa(int(wi)), err.Error())
 }
 
 func extType(path string) string {
