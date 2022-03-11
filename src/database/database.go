@@ -1,7 +1,7 @@
 package database
 
 import (
-	"gitee.com/snxamdf/http-server/config"
+	"gitee.com/snxamdf/http-server/src/config"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

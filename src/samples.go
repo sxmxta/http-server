@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gitee.com/snxamdf/http-server/common"
-	"gitee.com/snxamdf/http-server/server"
+	"gitee.com/snxamdf/http-server/src/common"
+	"gitee.com/snxamdf/http-server/src/server"
 )
 
 func main() {
