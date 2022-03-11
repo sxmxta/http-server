@@ -63,7 +63,7 @@ func (m *Context) Write(data interface{}) {
 		r["data"] = data
 		var b, err = common.ToJson(r)
 		if err != nil {
-			gui.Logs(err.Error())
+			gui.LogsTime(err.Error())
 		}
 		m.response.Write(b)
 	}
@@ -105,7 +105,7 @@ type Handler interface {
 }
 
 func RegisterRoute(route string, handler HandlerFUNC) {
-	gui.Logs("register route -> ", route)
+	gui.LogsTime("register route -> ", route)
 	routeMapper[route] = handler
 }
 
@@ -136,7 +136,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		//w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		gui.Logs("请求URL:", path)
+		gui.LogsTime("请求URL:", path)
 		//if r.Method == "OPTIONS" {
 		//	return
 		//}
@@ -182,10 +182,10 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	reqUrl := r.URL.String()
 	reqUrl = reqUrl[len(proxyUrl):]
 	reqUrl = fmt.Sprintf("%s%s", target, reqUrl)
-	gui.Logs("proxy url:", reqUrl, "method:", r.Method)
+	gui.LogsTime("proxy url:", reqUrl, "method:", r.Method)
 	req, err := http.NewRequest(r.Method, reqUrl, r.Body)
 	if err != nil {
-		gui.Logs("proxy http.NewRequest ", err.Error())
+		gui.LogsTime("proxy http.NewRequest ", err.Error())
 		return
 	}
 	for k, v := range r.Header {
@@ -195,7 +195,7 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := cli.Do(req)
 	if err != nil {
-		gui.Logs("proxy error:", err.Error())
+		gui.LogsTime("proxy error:", err.Error())
 		return
 	}
 	defer res.Body.Close()
@@ -205,7 +205,7 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	wi, err := io.Copy(w, res.Body)
-	gui.Logs("proxy response size:", strconv.Itoa(int(wi)), err.Error())
+	gui.LogsTime("proxy response size:", strconv.Itoa(int(wi)), err.Error())
 }
 
 func extType(path string) string {
