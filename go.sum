@@ -1,3 +1,9 @@
+gitee.com/snxamdf/dylib v0.0.0-20220222024034-ff8ee6531214 h1:RiepV5siZiHK8Q1q03kLDw+jZKXtkCw9FIQM6G5uf/E=
+gitee.com/snxamdf/dylib v0.0.0-20220222024034-ff8ee6531214/go.mod h1:YQ1WBenV7hDrRvWbivb8HYak36HTwrqOEm7qxUPNHdU=
+gitee.com/snxamdf/golcl v0.0.0-20220224064737-091b5ceff23b h1:QN3vG3zoDm+ZnsoC6MDbgD0863kl+FZjC3SmK6/OR/E=
+gitee.com/snxamdf/golcl v0.0.0-20220224064737-091b5ceff23b/go.mod h1:5sCxAVDldeqkoqnPumjAkg/tb8EVLvnTuzLfaSUmpIw=
+gitee.com/snxamdf/liblclbinres v0.0.0-20211227141734-e084bbdc4638 h1:fV+ph/5W9KMFpmInBp5RVk02+bSHXgtqOweYNYV34ZA=
+gitee.com/snxamdf/liblclbinres v0.0.0-20211227141734-e084bbdc4638/go.mod h1:qsuEUZs8pBFcKXJbFsNIMhMf+xRitSWff9rBtPOwLuM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
