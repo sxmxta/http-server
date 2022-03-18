@@ -182,7 +182,7 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	reqUrl := r.URL.String()
 	reqUrl = reqUrl[len(proxyUrl):]
 	reqUrl = fmt.Sprintf("%s%s", target, reqUrl)
-	gui.LogsTime("proxy url:", reqUrl, "method:", r.Method)
+	gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method)
 	req, err := http.NewRequest(r.Method, reqUrl, r.Body)
 	if err != nil {
 		gui.LogsTime("proxy http.NewRequest ", err.Error())
@@ -205,7 +205,11 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	wi, err := io.Copy(w, res.Body)
-	gui.LogsTime("proxy response size:", strconv.Itoa(int(wi)), err.Error())
+	if err != nil {
+		gui.LogsTime("proxy response size:", strconv.Itoa(int(wi)), err.Error())
+	} else {
+		gui.LogsTime("proxy response size:", strconv.Itoa(int(wi)))
+	}
 }
 
 func extType(path string) string {
