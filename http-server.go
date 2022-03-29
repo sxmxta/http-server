@@ -32,11 +32,8 @@ func main() {
 	gui.Logs("")
 	gui.Logs("使用说明：")
 	gui.Logs("\t1. 双击【http_server.exe】程序即可启动服务")
-	gui.Logs("\t2. 默认监听80端口，更改端口，hs.conf.json")
-	gui.Logs(`		 "server": {
-    "ip": "0.0.0.0",
-    "port": "11111"
-  }`)
+	gui.Logs("\t2. 默认监听80端口，更改端口，hs.conf.json => ")
+	gui.Logs("\t\t\"server\": { \"ip\": \"0.0.0.0\", \"port\": \"11111\"}")
 	gui.Logs("\t3. 本程序放在指定文件夹做为服务目录")
 	gui.Logs("")
 	gui.Logs("▁▂▃▄▅▆▇▉▉▉▉▉▉▉  程序信息  ▉▉▉▉▉▉▇▆▅▄▃▂▁")
