@@ -31,6 +31,6 @@ func (m *TGUIForm) init() {
 	m.width = 600
 	m.height = 400
 	icon := lcl.NewIcon()
-	icon.LoadFromFSFile("resources/icon.ico")
+	icon.LoadFromFSFile("resources/app.ico")
 	m.SetIcon(icon)
 }
