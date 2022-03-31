@@ -17,7 +17,7 @@ type TGUIForm struct {
 
 func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.init()
-	m.SetCaption("Web Server")
+	m.SetCaption("Http Web Server")
 	m.SetPosition(types.PoScreenCenter)
 	m.EnabledMaximize(false)
 	m.SetWidth(m.width)
