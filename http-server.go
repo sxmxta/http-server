@@ -3,6 +3,7 @@ package main
 import (
 	"gitee.com/snxamdf/http-server/src/gui"
 	"gitee.com/snxamdf/http-server/src/server"
+	"time"
 
 	"embed"
 	"gitee.com/snxamdf/golcl/inits"
@@ -22,7 +23,10 @@ func main() {
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.CreateForm(&gui.GUIForm, true)
 
+	t := time.Now()
+	msg := t.Format("2006-01-02 15:04:05") + " "
 	gui.Logs("Http Server 启动中......")
+	gui.Logs("Http Server 启动时间: " + msg)
 	gui.Logs("")
 	gui.Logs("免责声明：请不要将该软件做为商业用途，本软件使用过程中造成的损失作者本人概不负责。本软件只做分享学习使用。")
 	gui.Logs("")

@@ -9,10 +9,9 @@ var GUIForm = &TGUIForm{}
 
 type TGUIForm struct {
 	*lcl.TForm
-	width     int32
-	height    int32
-	logs      *lcl.TMemo
-	scrollBar *lcl.TScrollBar
+	width  int32
+	height int32
+	logs   *lcl.TMemo
 }
 
 func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {

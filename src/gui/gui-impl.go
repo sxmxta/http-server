@@ -13,6 +13,15 @@ func (m *TGUIForm) impl() {
 	m.logs.Font().SetSize(10)
 	m.logs.SetAlign(types.AlClient)
 	m.logs.SetScrollBars(types.SsAutoBoth)
+	//m.logs.SetWidth(m.width)
+	//m.logs.SetHeight(m.height - 25)
+
+	//label := lcl.NewLabel(m)
+	//label.SetParent(m)
+	//label.SetCaption("运行时间：")
+	//label.SetBounds(m.width/3, m.height-20, 0, 0)
+	//label.Font().SetColor(colors.ClBlue)
+	//label.Hide()
 
 	trayIcon := lcl.NewTrayIcon(m)
 	trayIcon.SetHint(m.Caption())
