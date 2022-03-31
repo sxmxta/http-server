@@ -1,10 +1,10 @@
 package gui
 
 import (
-	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/messages"
+	"math"
 	"strings"
 	"time"
 )
@@ -92,8 +92,10 @@ func LogsColor(message string, color int32) {
 		GUIForm.logs.Lines().Add(message)
 		GUIForm.logs.Perform(messages.EM_SCROLLCARET, 7, 0)
 	})
-	fmt.Println(logsLength, strings.Count(message, ""))
 	logsLength += strings.Count(message, "")
+	if logsLength >= math.MaxInt32 || logsLength < 0 {
+		logsLength = 0
+	}
 }
 
 func Logs(message ...string) {

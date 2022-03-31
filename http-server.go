@@ -7,7 +7,6 @@ import (
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"gitee.com/snxamdf/http-server/src/server"
-	"time"
 )
 
 //go:embed resources
@@ -22,14 +21,7 @@ func main() {
 	lcl.Application.SetTitle("Http Web Server")
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.CreateForm(&gui.GUIForm, true)
-	var c = make(chan string, 1)
 	go func() {
-		serverStart := <-c
-		t := time.Now()
-		msg := t.Format("2006-01-02 15:04:05")
-		gui.Logs("Http Server 启动中......")
-		gui.Logs("Http Server 启动时间: " + msg)
-		gui.Logs("")
 		gui.LogsColor("免责声明：请不要将该软件做为商业用途，本软件使用过程中造成的损失作者本人概不负责。本软件只做分享学习使用。", colors.ClRed)
 		gui.Logs("")
 		gui.Logs("软件说明")
@@ -49,12 +41,10 @@ func main() {
 		gui.Logs("Q   Q：122798224")
 		gui.Logs("开发语言：Golang")
 		gui.Logs("▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉")
-		gui.Logs("\n", serverStart, " \tsuccess.")
 		gui.LogsColor("", colors.ClDarkblue)
 		gui.LogsColor("-------------------------------- 以下服务日志 --------------------------------", colors.ClDarkblue)
+		server.StartHttpServer()
 	}()
-
-	go server.StartHttpServer(c)
 
 	lcl.Application.Run()
 }

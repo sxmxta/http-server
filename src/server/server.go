@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var contentType = map[string]string{
@@ -109,7 +110,7 @@ func RegisterRoute(route string, handler HandlerFUNC) {
 	routeMapper[route] = handler
 }
 
-func StartHttpServer(c chan string) {
+func StartHttpServer() error {
 	var serverIP = config.GetServerConf("server.ip")
 	var serverPort = config.GetServerConf("server.port")
 
@@ -122,8 +123,17 @@ func StartHttpServer(c chan string) {
 	addr := serverIP + ":" + serverPort
 	mux := http.NewServeMux()
 	mux.Handle("/", &HttpServerHandler{})
-	c <- fmt.Sprintf("%v: %v", "Http Server Listen:", addr)
-	_ = http.ListenAndServe(addr, mux)
+	t := time.Now()
+	msg := t.Format("2006-01-02 15:04:05")
+	gui.Logs("Http Server 启动中......")
+	gui.Logs("Http Server 启动时间: " + msg)
+	gui.Logs(fmt.Sprintf("%v: %v", "Http Server Listen:", addr))
+	err := http.ListenAndServe(addr, mux)
+	if err != nil {
+		gui.Logs("Http Server 启动失败")
+		gui.Logs(err.Error())
+	}
+	return err
 }
 
 type HttpServerHandler struct{}
