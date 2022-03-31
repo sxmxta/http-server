@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"fmt"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/gui"
@@ -110,7 +109,7 @@ func RegisterRoute(route string, handler HandlerFUNC) {
 	routeMapper[route] = handler
 }
 
-func StartHttpServer() {
+func StartHttpServer(c chan string) {
 	var serverIP = config.GetServerConf("server.ip")
 	var serverPort = config.GetServerConf("server.port")
 
@@ -121,10 +120,9 @@ func StartHttpServer() {
 		serverPort = "80"
 	}
 	addr := serverIP + ":" + serverPort
-	gui.Logs("\nHttp Server Listen: ", addr, "\n")
-	gui.LogsColor("", colors.ClMediumslateblue)
 	mux := http.NewServeMux()
 	mux.Handle("/", &HttpServerHandler{})
+	c <- fmt.Sprintf("%v: %v", "Http Server Listen:", addr)
 	_ = http.ListenAndServe(addr, mux)
 }
 

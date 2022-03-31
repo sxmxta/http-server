@@ -82,12 +82,12 @@ func (m *TGUIForm) showHIde() {
 
 var logsLength int
 
-func LogsColor(message string, color types.TColor) {
+func LogsColor(message string, color int32) {
 	lcl.ThreadSync(func() {
-		if color > 0 {
+		if color >= 0 {
 			GUIForm.logs.SetSelStart(int32(logsLength))
 			GUIForm.logs.SetSelLength(int32(strings.Count(message, "")))
-			GUIForm.logs.SelAttributes().SetColor(color)
+			GUIForm.logs.SelAttributes().SetColor(types.TColor(uint32(color)))
 		}
 		GUIForm.logs.Lines().Add(message)
 		GUIForm.logs.Perform(messages.EM_SCROLLCARET, 7, 0)
@@ -101,7 +101,7 @@ func Logs(message ...string) {
 	for _, v := range message {
 		msg += v
 	}
-	LogsColor(msg, 0)
+	LogsColor(msg, -1)
 }
 func LogsTime(message ...string) {
 	go func() {
