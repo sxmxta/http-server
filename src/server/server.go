@@ -141,7 +141,7 @@ type HttpServerHandler struct{}
 func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			gui.Logs("Http 致命错误")
+			gui.LogsTime("Http 致命错误")
 		}
 	}()
 	var path = r.URL.Path
@@ -192,7 +192,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			gui.Logs("Http proxy 致命错误")
+			gui.LogsTime("Http proxy 致命错误")
 		}
 	}()
 	//fmt.Println("url: ", r.URL)
