@@ -139,6 +139,11 @@ func StartHttpServer() error {
 type HttpServerHandler struct{}
 
 func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if err := recover(); err != nil {
+			gui.Logs("Http 致命错误")
+		}
+	}()
 	var path = r.URL.Path
 	if ok, proxyUrl, target := isProxy(path); ok {
 		proxy(proxyUrl, target, w, r)
@@ -185,6 +190,11 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if err := recover(); err != nil {
+			gui.Logs("Http proxy 致命错误")
+		}
+	}()
 	//fmt.Println("url: ", r.URL)
 	//查看url各个信息
 	//fmt.Print(r.Host, " ", r.Method, " \nr.URL.String ", r.URL.String(), " r.URL.Host ", r.URL.Host, " r.URL.Fragment ", r.URL.Fragment, " r.URL.Hostname ", r.URL.Hostname(), " r.URL.RequestURI ", r.URL.RequestURI(), " r.URL.Scheme ", r.URL.Scheme)
@@ -192,10 +202,9 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	reqUrl := r.URL.String()
 	reqUrl = reqUrl[len(proxyUrl):]
 	reqUrl = fmt.Sprintf("%s%s", target, reqUrl)
-	gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method)
 	req, err := http.NewRequest(r.Method, reqUrl, r.Body)
 	if err != nil {
-		gui.LogsTime("proxy http.NewRequest ", err.Error())
+		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
 		return
 	}
 	for k, v := range r.Header {
@@ -205,7 +214,7 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := cli.Do(req)
 	if err != nil {
-		gui.LogsTime("proxy error:", err.Error())
+		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy error:", err.Error())
 		return
 	}
 	defer res.Body.Close()
@@ -216,9 +225,9 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	}
 	wi, err := io.Copy(w, res.Body)
 	if err != nil {
-		gui.LogsTime("proxy response size:", strconv.Itoa(int(wi)), err.Error())
+		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
 	} else {
-		gui.LogsTime("proxy response size:", strconv.Itoa(int(wi)))
+		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)))
 	}
 }
 

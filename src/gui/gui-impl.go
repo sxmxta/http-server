@@ -99,11 +99,13 @@ func LogsColor(message string, color int32) {
 }
 
 func Logs(message ...string) {
-	msg := ""
-	for _, v := range message {
-		msg += v
-	}
-	LogsColor(msg, -1)
+	go func() {
+		msg := ""
+		for _, v := range message {
+			msg += v
+		}
+		LogsColor(msg, -1)
+	}()
 }
 func LogsTime(message ...string) {
 	go func() {
@@ -112,6 +114,6 @@ func LogsTime(message ...string) {
 		for _, v := range message {
 			msg += v + " "
 		}
-		Logs(msg)
+		LogsColor(msg, -1)
 	}()
 }
