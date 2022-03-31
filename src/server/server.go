@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/gui"
@@ -131,7 +132,7 @@ func StartHttpServer() error {
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {
 		gui.Logs("Http Server 启动失败")
-		gui.Logs(err.Error())
+		gui.LogsColor(err.Error(), colors.ClRed)
 	}
 	return err
 }

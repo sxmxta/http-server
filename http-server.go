@@ -5,6 +5,7 @@ import (
 	"gitee.com/snxamdf/golcl/inits"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
+	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"gitee.com/snxamdf/http-server/src/server"
 )
@@ -41,9 +42,13 @@ func main() {
 		gui.Logs("Q   Q：122798224")
 		gui.Logs("开发语言：Golang")
 		gui.Logs("▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉")
-		gui.LogsColor("", colors.ClDarkblue)
-		gui.LogsColor("-------------------------------- 以下服务日志 --------------------------------", colors.ClDarkblue)
-		server.StartHttpServer()
+		if config.ParseConfigErr == "" {
+			gui.LogsColor("", colors.ClDarkblue)
+			gui.LogsColor("-------------------------------- 以下服务日志 --------------------------------", colors.ClDarkblue)
+			server.StartHttpServer()
+		} else {
+			gui.LogsColor("错误-ERROR "+config.ParseConfigErr, colors.ClRed)
+		}
 	}()
 
 	lcl.Application.Run()

@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"gitee.com/snxamdf/http-server/src/gui"
 	"io/ioutil"
 )
 
@@ -26,17 +27,29 @@ func GetDBConfig() Config {
 	return dbConfig
 }
 
+var ParseConfigErr string
+
 func init() {
+	defer func() {
+		if err := recover(); err != nil {
+			ParseConfigErr = "读取配置文件 致命错误"
+		}
+	}()
 	byt, err := ioutil.ReadFile("hs.conf.json")
 	if err != nil {
-		panic("读取配置文件错误：" + err.Error())
+		//panic("读取配置文件错误：" + err.Error())
+		ParseConfigErr = "读取配置文件错误：" + err.Error()
 		return
 	}
 	var data = make(map[string]interface{})
 	err = json.Unmarshal(byt, &data)
 	if err != nil {
-		panic("解析配置文件错误：" + err.Error())
+		//panic("解析配置文件错误：" + err.Error())
+		ParseConfigErr = "解析配置文件错误：" + err.Error()
+		return
 	}
+	s, _ := json.Marshal(data)
+	gui.LogsTime("配置文件：", string(s))
 	var serverKey = "server"
 	var proxyKey = "proxy"
 	var databaseKey = "database"
