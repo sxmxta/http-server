@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/gui"
@@ -121,6 +122,7 @@ func StartHttpServer() {
 	}
 	addr := serverIP + ":" + serverPort
 	gui.Logs("\nHttp Server Listen: ", addr, "\n")
+	gui.LogsColor("", colors.ClMediumslateblue)
 	mux := http.NewServeMux()
 	mux.Handle("/", &HttpServerHandler{})
 	_ = http.ListenAndServe(addr, mux)

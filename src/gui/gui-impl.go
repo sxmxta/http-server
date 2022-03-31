@@ -1,18 +1,28 @@
 package gui
 
 import (
+	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/messages"
+	"strings"
 	"time"
 )
 
 func (m *TGUIForm) impl() {
-	m.logs = lcl.NewMemo(m)
+	m.logs = lcl.NewRichEdit(m)
 	m.logs.SetParent(m)
 	m.logs.Font().SetSize(10)
 	m.logs.SetAlign(types.AlClient)
 	m.logs.SetScrollBars(types.SsAutoBoth)
+	m.logs.SetReadOnly(true)
+	m.logs.SetOnDblClick(func(sender lcl.IObject) {
+		logsLength = 0
+		m.logs.Lines().Clear()
+	})
+	m.logs.SetHint("双击清空")
+	m.logs.SetShowHint(true)
+	//m.logs.SetColor(colors.ClLime)
 	//m.logs.SetWidth(m.width)
 	//m.logs.SetHeight(m.height - 25)
 
@@ -70,15 +80,28 @@ func (m *TGUIForm) showHIde() {
 	}
 }
 
-func Logs(message ...string) {
+var logsLength int
+
+func LogsColor(message string, color types.TColor) {
 	lcl.ThreadSync(func() {
-		msg := ""
-		for _, v := range message {
-			msg += v
+		if color > 0 {
+			GUIForm.logs.SetSelStart(int32(logsLength))
+			GUIForm.logs.SetSelLength(int32(strings.Count(message, "")))
+			GUIForm.logs.SelAttributes().SetColor(color)
 		}
-		GUIForm.logs.Lines().Add(msg)
+		GUIForm.logs.Lines().Add(message)
 		GUIForm.logs.Perform(messages.EM_SCROLLCARET, 7, 0)
 	})
+	fmt.Println(logsLength, strings.Count(message, ""))
+	logsLength += strings.Count(message, "")
+}
+
+func Logs(message ...string) {
+	msg := ""
+	for _, v := range message {
+		msg += v
+	}
+	LogsColor(msg, 0)
 }
 func LogsTime(message ...string) {
 	go func() {

@@ -49,17 +49,22 @@ func init() {
 		}
 	}
 	var server = data[serverKey]
-	for k, v := range server.(map[string]interface{}) {
-		var val = v.(string)
-		if val != "" {
-			serverConfig[serverKey+"."+k] = val
+	if server != nil {
+		for k, v := range server.(map[string]interface{}) {
+			var val = v.(string)
+			if val != "" {
+				serverConfig[serverKey+"."+k] = val
+			}
 		}
 	}
+
 	var db = data[databaseKey]
-	for k, v := range db.(map[string]interface{}) {
-		var val = v.(string)
-		if val != "" {
-			dbConfig[databaseKey+"."+k] = val
+	if db != nil {
+		for k, v := range db.(map[string]interface{}) {
+			var val = v.(string)
+			if val != "" {
+				dbConfig[databaseKey+"."+k] = val
+			}
 		}
 	}
 	//fmt.Println("解析 服务 配置")
