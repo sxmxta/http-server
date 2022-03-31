@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"gitee.com/snxamdf/http-server/src/gui"
 	"io/ioutil"
 )
 
@@ -14,6 +13,11 @@ var dbConfig = make(Config)
 
 func (m Config) Get(key string) string {
 	return m[key]
+}
+
+func (m Config) ToJSONString() string {
+	s, _ := json.Marshal(m)
+	return string(s)
 }
 
 func GetServerConfig() Config {
@@ -48,8 +52,6 @@ func init() {
 		ParseConfigErr = "解析配置文件错误：" + err.Error()
 		return
 	}
-	s, _ := json.Marshal(data)
-	gui.LogsTime("配置文件：", string(s))
 	var serverKey = "server"
 	var proxyKey = "proxy"
 	var databaseKey = "database"

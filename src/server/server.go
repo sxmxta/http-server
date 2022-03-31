@@ -129,6 +129,7 @@ func StartHttpServer() error {
 	gui.Logs("Http Server 启动中......")
 	gui.Logs("Http Server 启动时间: " + msg)
 	gui.Logs(fmt.Sprintf("%v: %v", "Http Server Listen:", addr))
+	gui.Logs("Http Server Proxy: ", config.GetProxyConfig().ToJSONString())
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {
 		gui.Logs("Http Server 启动失败")
