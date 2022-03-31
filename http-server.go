@@ -18,7 +18,7 @@ var libs embed.FS
 func main() {
 	inits.Init(&libs, &resources)
 	lcl.Application.Initialize()
-	lcl.Application.SetTitle("MIR客户端")
+	lcl.Application.SetTitle("web-server")
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.CreateForm(&gui.GUIForm, true)
 

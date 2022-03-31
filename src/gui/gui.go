@@ -17,13 +17,12 @@ type TGUIForm struct {
 
 func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.init()
-	m.SetCaption("web-server")
+	m.SetCaption("Web Server")
 	m.SetPosition(types.PoScreenCenter)
 	m.EnabledMaximize(false)
 	m.SetWidth(m.width)
 	m.SetHeight(m.height)
 	m.SetBorderStyle(types.BsSingle)
-
 	m.impl()
 }
 
