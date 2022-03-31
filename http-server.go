@@ -42,9 +42,8 @@ func main() {
 		gui.Logs("Q   Q：122798224")
 		gui.Logs("开发语言：Golang")
 		gui.Logs("▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉")
+		gui.LogsColor("-------------------------------- 以下服务日志 --------------------------------", colors.ClDarkblue)
 		if config.ParseConfigErr == "" {
-			gui.LogsColor("", colors.ClDarkblue)
-			gui.LogsColor("-------------------------------- 以下服务日志 --------------------------------", colors.ClDarkblue)
 			server.StartHttpServer()
 		} else {
 			gui.LogsColor("错误-ERROR "+config.ParseConfigErr, colors.ClRed)
