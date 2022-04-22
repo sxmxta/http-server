@@ -22,6 +22,44 @@ func (m *TGUIForm) impl() {
 	})
 	m.logs.SetHint("双击清空")
 	m.logs.SetShowHint(true)
+
+	// 底部状态条
+	m.stbar = lcl.NewStatusBar(m)
+	m.stbar.SetParent(m)
+	m.stbar.SetAutoHint(true)
+	m.stbar.SetSimplePanel(true)
+
+	m.showProxyLogChkBox = lcl.NewCheckBox(m)
+	m.showProxyLogChkBox.SetParent(m)
+	m.showProxyLogChkBox.SetCaption("显示代理请求日志")
+	m.showProxyLogChkBox.SetBounds(m.width-50, m.height, 0, 0)
+	m.showProxyLogChkBox.SetAnchors(types.NewSet(types.AkBottom, types.AkRight))
+	m.showProxyLogChkBox.SetOnClick(func(sender lcl.IObject) {
+		m.ShowProxyLog = m.showProxyLogChkBox.Checked()
+	})
+	m.showProxyLogChkBox.SetChecked(true)
+	m.ShowProxyLog = true
+
+	m.enableProxyDetailChkBox = lcl.NewCheckBox(m)
+	m.enableProxyDetailChkBox.SetParent(m)
+	m.enableProxyDetailChkBox.SetCaption("启用代理详情")
+	m.enableProxyDetailChkBox.SetBounds(m.showProxyLogChkBox.Left()-150, m.height, 0, 0)
+	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkBottom, types.AkRight))
+	m.enableProxyDetailChkBox.SetOnClick(func(sender lcl.IObject) {
+		m.EnableProxyDetail = m.enableProxyDetailChkBox.Checked()
+	})
+
+	m.showStaticLogChkBox = lcl.NewCheckBox(m)
+	m.showStaticLogChkBox.SetParent(m)
+	m.showStaticLogChkBox.SetCaption("显示普通请求日志")
+	m.showStaticLogChkBox.SetBounds(m.enableProxyDetailChkBox.Left()-150, m.height, 0, 0)
+	m.showStaticLogChkBox.SetAnchors(types.NewSet(types.AkBottom, types.AkRight))
+	m.showStaticLogChkBox.SetOnClick(func(sender lcl.IObject) {
+		m.ShowStaticLog = m.showStaticLogChkBox.Checked()
+	})
+	m.showStaticLogChkBox.SetChecked(true)
+	m.ShowStaticLog = true
+
 	//m.logs.SetColor(colors.ClLime)
 	//m.logs.SetWidth(m.width)
 	//m.logs.SetHeight(m.height - 25)
@@ -105,6 +143,19 @@ func Logs(message ...string) {
 	}
 	LogsColor(msg, -1)
 }
+
+func LogsStaticTime(message ...string) {
+	if GUIForm.ShowStaticLog {
+		LogsTime(message...)
+	}
+}
+
+func LogsProxyTime(message ...string) {
+	if GUIForm.ShowProxyLog {
+		LogsTime(message...)
+	}
+}
+
 func LogsTime(message ...string) {
 	go func() {
 		t := time.Now()

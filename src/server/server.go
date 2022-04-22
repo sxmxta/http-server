@@ -174,7 +174,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		//w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		gui.LogsTime("请求URL:", path)
+		gui.LogsStaticTime("请求URL:", path)
 		//if r.Method == "OPTIONS" {
 		//	return
 		//}
@@ -214,6 +214,8 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var id int
+
 func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -227,32 +229,79 @@ func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
 	reqUrl := r.URL.String()
 	reqUrl = reqUrl[len(proxyUrl):]
 	reqUrl = fmt.Sprintf("%s%s", target, reqUrl)
-	req, err := http.NewRequest(r.Method, reqUrl, r.Body)
+	var (
+		request     *http.Request
+		response    *http.Response
+		err         error
+		proxyDetail *gui.ProxyDetail
+	)
+	//启用代理详情 记录 请求 详情
+	if gui.GUIForm.EnableProxyDetail {
+		id++
+		r.ParseForm()
+		proxyDetail = &gui.ProxyDetail{
+			ID:     id,
+			URL:    reqUrl,
+			Method: r.Method,
+			Host:   r.Host,
+			Request: gui.ProxyRequestDetail{
+				URLParams:  r.URL.Query(),
+				FormParams: r.PostForm,
+			},
+			Response: gui.ProxyResponseDetail{},
+		}
+		buf := new(bytes.Buffer)
+		_, err = buf.ReadFrom(r.Body)
+		if err == nil {
+			proxyDetail.Request.Body = buf.String()
+			proxyDetail.Request.Header = r.Header
+			request, err = http.NewRequest(r.Method, reqUrl, buf)
+		}
+	} else {
+		request, err = http.NewRequest(r.Method, reqUrl, r.Body)
+	}
 	if err != nil {
-		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
+		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
 		return
 	}
 	for k, v := range r.Header {
 		for _, vs := range v {
-			req.Header.Add(k, vs)
+			request.Header.Add(k, vs)
 		}
 	}
-	res, err := cli.Do(req)
+	//发起代理请求
+	response, err = cli.Do(request)
 	if err != nil {
-		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy error:", err.Error())
+		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy error:", err.Error())
 		return
 	}
-	defer res.Body.Close()
-	for k, v := range res.Header {
+	defer response.Body.Close()
+	//处理代理原样返回给客户端
+	for k, v := range response.Header {
 		for _, vs := range v {
 			w.Header().Add(k, vs)
 		}
 	}
-	wi, err := io.Copy(w, res.Body)
-	if err != nil {
-		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
+
+	var wi int64
+	//启用代理详情 记录 请求 详情
+	if gui.GUIForm.EnableProxyDetail {
+		buf := new(bytes.Buffer)
+		wi, err = buf.ReadFrom(response.Body)
+		if err == nil {
+			proxyDetail.Response.Body = buf.String()
+			proxyDetail.Response.Header = response.Header
+			proxyDetail.Response.Size = wi
+			gui.GUIForm.AddProxyDetail(proxyDetail)
+			_, err = w.Write(buf.Bytes())
+		}
 	} else {
-		gui.LogsTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)))
+		wi, err = io.Copy(w, response.Body)
+	}
+	if err != nil {
+		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
+	} else {
+		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)))
 	}
 }
 
