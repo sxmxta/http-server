@@ -5,7 +5,7 @@ import (
 	"gitee.com/snxamdf/golcl/inits"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
-	"gitee.com/snxamdf/http-server/src/config"
+	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"gitee.com/snxamdf/http-server/src/server"
 )
@@ -43,10 +43,10 @@ func main() {
 		gui.Logs("开发语言：Golang")
 		gui.Logs("▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉")
 		gui.LogsColor("-------------------------------- 以下服务日志 --------------------------------", colors.ClDarkblue)
-		if config.ParseConfigErr == "" {
+		if consts.GlobalPanicRecoverString == "" {
 			server.StartHttpServer()
 		} else {
-			gui.LogsColor("错误-ERROR "+config.ParseConfigErr, colors.ClRed)
+			gui.LogsColor("错误-ERROR "+consts.GlobalPanicRecoverString, colors.ClRed)
 		}
 	}()
 

@@ -18,10 +18,10 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.init()
 	m.SetCaption("Http Web Server")
 	m.SetPosition(types.PoScreenCenter)
-	m.EnabledMaximize(false)
+	//m.EnabledMaximize(false)
 	m.SetWidth(m.width)
 	m.SetHeight(m.height)
-	m.SetBorderStyle(types.BsSingle)
+	//m.SetBorderStyle(types.BsSingle)
 	m.impl()
 }
 

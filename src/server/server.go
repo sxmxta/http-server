@@ -3,9 +3,11 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"gitee.com/snxamdf/golcl/emfs"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
+	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"io"
 	"io/ioutil"
@@ -17,18 +19,36 @@ import (
 )
 
 var contentType = map[string]string{
-	".css":  "text/css",
-	".js":   "application/javascript",
-	".html": "text/html",
-	".htm":  "text/html",
-	".txt":  "text/plain",
-	".png":  "image/png",
-	".gif":  "image/gif",
-	".jpg":  "image/jpeg",
-	".bmp":  "image/bmp",
-	".jpeg": "image/jpeg",
-	".ico":  "image/ico",
-	".json": "application/json",
+	//".css":  "text/css",
+	//".js":   "application/javascript",
+	//".html": "text/html",
+	//".htm":  "text/html",
+	//".txt":  "text/plain",
+	//".png":  "image/png",
+	//".gif":  "image/gif",
+	//".jpg":  "image/jpeg",
+	//".bmp":  "image/bmp",
+	//".jpeg": "image/jpeg",
+	//".ico":  "image/ico",
+	//".json": "application/json",
+}
+
+func Init() {
+	mimeTypes, err := emfs.GetResources("resources/mime-types.conf")
+	if err != nil {
+		consts.GlobalPanicRecoverString = err.Error()
+	} else {
+		var types = strings.Split(string(mimeTypes), "\n")
+		for _, mime := range types {
+			mime = strings.TrimSpace(mime)
+			if mime != "" && mime[0] != '#' {
+				var m = strings.Split(mime, "=")
+				if len(m) == 2 {
+					contentType["."+m[0]] = m[1]
+				}
+			}
+		}
+	}
 }
 
 var sites = "sites"
@@ -112,6 +132,7 @@ func RegisterRoute(route string, handler HandlerFUNC) {
 }
 
 func StartHttpServer() error {
+	Init()
 	var serverIP = config.GetServerConf("server.ip")
 	var serverPort = config.GetServerConf("server.port")
 
@@ -166,6 +187,8 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		if path == "/" {
 			path = "/index.html"
+		} else if strings.LastIndex(path, "/") == len(path)-1 {
+			path = path + "index.html"
 		}
 		var (
 			byt []byte

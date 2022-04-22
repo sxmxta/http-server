@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"gitee.com/snxamdf/http-server/src/consts"
 	"io/ioutil"
 )
 
@@ -31,25 +32,23 @@ func GetDBConfig() Config {
 	return dbConfig
 }
 
-var ParseConfigErr string
-
 func init() {
 	defer func() {
 		if err := recover(); err != nil {
-			ParseConfigErr = "读取配置文件 致命错误 " + (err.(error)).Error()
+			consts.GlobalPanicRecoverString = "读取配置文件 致命错误 " + (err.(error)).Error()
 		}
 	}()
 	byt, err := ioutil.ReadFile("hs.conf.json")
 	if err != nil {
 		//panic("读取配置文件错误：" + err.Error())
-		ParseConfigErr = "读取配置文件错误：" + err.Error()
+		consts.GlobalPanicRecoverString = "读取配置文件错误：" + err.Error()
 		return
 	}
 	var data = make(map[string]interface{})
 	err = json.Unmarshal(byt, &data)
 	if err != nil {
 		//panic("解析配置文件错误：" + err.Error())
-		ParseConfigErr = "解析配置文件错误：" + err.Error()
+		consts.GlobalPanicRecoverString = "解析配置文件错误：" + err.Error()
 		return
 	}
 	var serverKey = "server"
