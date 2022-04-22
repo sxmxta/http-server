@@ -1,19 +1,20 @@
 {
   "server": {
     "ip": "0.0.0.0",
-    "port": "10086"
+    "port": "8086"
   },
   "proxy": {
-    "/api": {
-      "target": "http://192.168.1.8:9762"
+    "/dam": {
+      "target": "http://192.168.1.150:6666"
     },
-    "/home": {
-      "target": "http://192.168.1.8:9762"
+    "/gateway": {
+      "target": "http://192.168.1.150:6667"
+    },
+    "/domain": {
+      "target": "http://192.168.1.150:6668"
+    },
+    "/workflow": {
+      "target": "http://192.168.1.150:6669"
     }
-  },
-  "database": {
-    "type": "sqlite3",
-    "path": "db/",
-    "name": "mir"
   }
 }

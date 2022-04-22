@@ -36,7 +36,7 @@ var ParseConfigErr string
 func init() {
 	defer func() {
 		if err := recover(); err != nil {
-			ParseConfigErr = "读取配置文件 致命错误"
+			ParseConfigErr = "读取配置文件 致命错误 " + (err.(error)).Error()
 		}
 	}()
 	byt, err := ioutil.ReadFile("hs.conf.json")
