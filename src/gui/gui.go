@@ -14,6 +14,7 @@ type TGUIForm struct {
 	width                   int32
 	height                  int32
 	logs                    *lcl.TRichEdit
+	logGrid                 *lcl.TStringGrid
 	stbar                   *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	ShowProxyLog            bool

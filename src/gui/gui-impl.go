@@ -3,6 +3,7 @@ package gui
 import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
+	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/golcl/lcl/types/messages"
 	"math"
 	"strings"
@@ -13,8 +14,8 @@ func (m *TGUIForm) impl() {
 	m.logs = lcl.NewRichEdit(m)
 	m.logs.SetParent(m)
 	m.logs.Font().SetSize(10)
-	m.logs.SetAlign(types.AlClient)
-	m.logs.SetScrollBars(types.SsAutoBoth)
+	//m.logs.SetAlign(types.AlClient)
+	//m.logs.SetScrollBars(types.SsAutoBoth)
 	m.logs.SetReadOnly(true)
 	m.logs.SetOnDblClick(func(sender lcl.IObject) {
 		logsLength = 0
@@ -22,6 +23,40 @@ func (m *TGUIForm) impl() {
 	})
 	m.logs.SetHint("双击清空")
 	m.logs.SetShowHint(true)
+	m.logs.SetVisible(false)
+
+	m.logGrid = lcl.NewStringGrid(m)
+	m.logGrid.SetParent(m)
+	m.logGrid.SetAlign(types.AlClient)
+	m.logGrid.SetFixedCols(0)
+	// 表格边框样式，这里设置为没有边框
+	m.logGrid.SetBorderStyle(types.BsNone)
+	// 设置表格为平面样式
+	m.logGrid.SetFlat(true)
+	// 设置flat后可以用这个修改fixed区域的表格线
+	m.logGrid.SetFixedGridLineColor(colors.ClRed)
+	m.logGrid.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
+
+	var col1 = m.logGrid.Columns().Add()
+	col1.SetWidth(50)
+	title := col1.Title()
+	title.SetCaption("序号")
+
+	var col2 = m.logGrid.Columns().Add()
+	col2.SetWidth(m.width - 200)
+	col2.Title().SetCaption("地址")
+
+	var col3 = m.logGrid.Columns().Add()
+	col3.SetWidth(150)
+	col3.SetButtonStyle(types.CbsButton)
+	col3.Title().SetCaption("Button")
+
+	m.SetOnResize(func(sender lcl.IObject) {
+		col2.SetWidth(m.Width() - 200)
+	})
+	m.SetOnConstrainedResize(func(sender lcl.IObject, minWidth, minHeight, maxWidth, maxHeight *int32) {
+		col2.SetWidth(m.Width() - 200)
+	})
 
 	// 底部状态条
 	m.stbar = lcl.NewStatusBar(m)
