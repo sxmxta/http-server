@@ -3,6 +3,10 @@
     "ip": "0.0.0.0",
     "port": "8086"
   },
+  "sqlite3": {
+    "path": "db/",
+    "name": "mir"
+  },
   "proxy": {
     "/dam": {
       "target": "http://192.168.1.150:58080"
@@ -10,11 +14,17 @@
     "/gateway": {
       "target": "http://192.168.1.150:58080"
     },
-    "/domain": {
+    "/domain/": {
       "target": "http://192.168.1.150:58080"
     },
     "/workflow": {
       "target": "http://192.168.1.150:18085"
+    },
+    "/mock": {
+      "target": "http://192.168.1.150:18085",
+      "rewrite": {
+        "^/mock/": "/test/"
+      }
     }
   }
 }

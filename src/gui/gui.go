@@ -58,11 +58,11 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.impl()
 }
 
-func (m *TGUIForm) AddProxyDetail(proxyDetail *ProxyDetail) {
+func (m *TGUIForm) SetProxyDetail(proxyDetail *ProxyDetail) {
 	m.ProxyDetail[proxyDetail.ID] = proxyDetail
 	//add list grid
-	d, _ := json.Marshal(m.ProxyDetail)
-	fmt.Println(string(d))
+	d, _ := json.Marshal(proxyDetail)
+	fmt.Println("\nproxyDetail:", proxyDetail.URL, " JSON:", string(d))
 }
 
 func (m *TGUIForm) init() {

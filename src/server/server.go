@@ -9,29 +9,14 @@ import (
 	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/gui"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 )
 
-var contentType = map[string]string{
-	//".css":  "text/css",
-	//".js":   "application/javascript",
-	//".html": "text/html",
-	//".htm":  "text/html",
-	//".txt":  "text/plain",
-	//".png":  "image/png",
-	//".gif":  "image/gif",
-	//".jpg":  "image/jpeg",
-	//".bmp":  "image/bmp",
-	//".jpeg": "image/jpeg",
-	//".ico":  "image/ico",
-	//".json": "application/json",
-}
+var contentType = map[string]string{}
 
 func Init() {
 	mimeTypes, err := emfs.GetResources("resources/mime-types.conf")
@@ -133,8 +118,8 @@ func RegisterRoute(route string, handler HandlerFUNC) {
 
 func StartHttpServer() error {
 	Init()
-	var serverIP = config.GetServerConf("server.ip")
-	var serverPort = config.GetServerConf("server.port")
+	var serverIP = config.Cfg.Server.IP
+	var serverPort = config.Cfg.Server.PORT
 
 	if serverIP == "" {
 		serverIP = "127.0.0.1"
@@ -150,7 +135,7 @@ func StartHttpServer() error {
 	gui.Logs("Http Server 启动中......")
 	gui.Logs("Http Server 启动时间: " + msg)
 	gui.Logs(fmt.Sprintf("%v: %v", "Http Server Listen:", addr))
-	gui.Logs("Http Server Proxy: ", config.GetProxyConfig().ToJSONString())
+	gui.Logs("Http Server Proxy: ", string(config.Cfg.Proxy.ToJSON()))
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {
 		gui.Logs("Http Server 启动失败")
@@ -168,8 +153,8 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 	var path = r.URL.Path
-	if ok, proxyUrl, target := isProxy(path); ok {
-		proxy(proxyUrl, target, w, r)
+	if ok, proxyAddr := isProxy(r); ok {
+		proxy(proxyAddr, w, r)
 	} else {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -214,110 +199,10 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var id int
-
-func proxy(proxyUrl, target string, w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			gui.LogsTime("Http proxy 致命错误")
-		}
-	}()
-	//fmt.Println("url: ", r.URL)
-	//查看url各个信息
-	//fmt.Print(r.Host, " ", r.Method, " \nr.URL.String ", r.URL.String(), " r.URL.Host ", r.URL.Host, " r.URL.Fragment ", r.URL.Fragment, " r.URL.Hostname ", r.URL.Hostname(), " r.URL.RequestURI ", r.URL.RequestURI(), " r.URL.Scheme ", r.URL.Scheme)
-	cli := &http.Client{}
-	reqUrl := r.URL.String()
-	reqUrl = reqUrl[len(proxyUrl):]
-	reqUrl = fmt.Sprintf("%s%s", target, reqUrl)
-	var (
-		request     *http.Request
-		response    *http.Response
-		err         error
-		proxyDetail *gui.ProxyDetail
-	)
-	//启用代理详情 记录 请求 详情
-	if gui.GUIForm.EnableProxyDetail {
-		id++
-		r.ParseForm()
-		proxyDetail = &gui.ProxyDetail{
-			ID:     id,
-			URL:    reqUrl,
-			Method: r.Method,
-			Host:   r.Host,
-			Request: gui.ProxyRequestDetail{
-				URLParams:  r.URL.Query(),
-				FormParams: r.PostForm,
-			},
-			Response: gui.ProxyResponseDetail{},
-		}
-		buf := new(bytes.Buffer)
-		_, err = buf.ReadFrom(r.Body)
-		if err == nil {
-			proxyDetail.Request.Body = buf.String()
-			proxyDetail.Request.Header = r.Header
-			request, err = http.NewRequest(r.Method, reqUrl, buf)
-		}
-	} else {
-		request, err = http.NewRequest(r.Method, reqUrl, r.Body)
-	}
-	if err != nil {
-		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
-		return
-	}
-	for k, v := range r.Header {
-		for _, vs := range v {
-			request.Header.Add(k, vs)
-		}
-	}
-	//发起代理请求
-	response, err = cli.Do(request)
-	if err != nil {
-		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy error:", err.Error())
-		return
-	}
-	defer response.Body.Close()
-	//处理代理原样返回给客户端
-	for k, v := range response.Header {
-		for _, vs := range v {
-			w.Header().Add(k, vs)
-		}
-	}
-
-	var wi int64
-	//启用代理详情 记录 请求 详情
-	if gui.GUIForm.EnableProxyDetail {
-		buf := new(bytes.Buffer)
-		wi, err = buf.ReadFrom(response.Body)
-		if err == nil {
-			proxyDetail.Response.Body = buf.String()
-			proxyDetail.Response.Header = response.Header
-			proxyDetail.Response.Size = wi
-			gui.GUIForm.AddProxyDetail(proxyDetail)
-			_, err = w.Write(buf.Bytes())
-		}
-	} else {
-		wi, err = io.Copy(w, response.Body)
-	}
-	if err != nil {
-		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
-	} else {
-		gui.LogsProxyTime("proxy url:  ", reqUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)))
-	}
-}
-
 func extType(path string) string {
 	idx := strings.LastIndex(path, ".")
 	if idx != -1 {
 		return path[idx:]
 	}
 	return ""
-}
-
-func isProxy(path string) (bool, string, string) {
-	for proxyUrl, v := range config.GetProxyConfig() {
-		if strings.Index(path, proxyUrl) == 0 {
-			return true, proxyUrl, v
-		}
-	}
-	return false, "", ""
 }
