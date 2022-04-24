@@ -60,6 +60,10 @@ func main() {
 							gui.LogsColor(msg.Color, m)
 						} else if msg.Type == 2 {
 							gui.LogsTime(msg.Message...)
+						} else if msg.Type == 3 {
+							gui.LogsProxyTime(msg.Message...)
+						} else if msg.Type == 4 {
+							gui.LogsStaticTime(msg.Message...)
 						}
 					}
 				}

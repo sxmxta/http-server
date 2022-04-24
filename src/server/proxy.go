@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"gitee.com/snxamdf/http-server/src/config"
+	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"io"
 	"net/http"
@@ -19,7 +20,7 @@ var jar, _ = cookiejar.New(nil)
 func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			gui.LogsTime("Http proxy 致命错误")
+			consts.PutLogsProxyTime("Http proxy 致命错误")
 		}
 	}()
 	//fmt.Println("url: ", r.URL)
@@ -60,7 +61,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		request, err = http.NewRequest(r.Method, proxyAddr.targetUrl, r.Body)
 	}
 	if err != nil {
-		gui.LogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
+		consts.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
 		return
 	}
 
@@ -77,7 +78,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	//发起代理请求
 	response, err = cli.Do(request)
 	if err != nil {
-		gui.LogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy error:", err.Error())
+		consts.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy error:", err.Error())
 		return
 	}
 	defer response.Body.Close()
@@ -105,9 +106,9 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		wi, err = io.Copy(w, response.Body)
 	}
 	if err != nil {
-		gui.LogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
+		consts.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
 	} else {
-		gui.LogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)))
+		consts.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)))
 	}
 }
 
