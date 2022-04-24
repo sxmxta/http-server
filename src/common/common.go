@@ -1,11 +1,13 @@
 package common
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -63,4 +65,21 @@ func IsEmpty(value ...interface{}) bool {
 		}
 	}
 	return false
+}
+
+// "1path","/2path","3path/","/4path/"
+func PathConcat(paths ...string) string {
+	var p bytes.Buffer
+	for _, path := range paths {
+		if !(strings.Index(path, "/") == 0) {
+			p.WriteString("/")
+		}
+		var idxLast = strings.LastIndex(path, "/")
+		if idxLast == len(path)-1 {
+			p.WriteString(path[:idxLast])
+		} else {
+			p.WriteString(path)
+		}
+	}
+	return p.String()
 }

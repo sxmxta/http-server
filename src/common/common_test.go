@@ -6,5 +6,5 @@ import (
 )
 
 func TestRandomString(t *testing.T) {
-	fmt.Println(RandomString(6))
+	fmt.Println(PathConcat("1path", "/2path", "3path/", "/4path/", "/path5", "path6"))
 }

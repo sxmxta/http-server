@@ -49,6 +49,14 @@ func main() {
 			gui.LogsColor("错误-ERROR "+consts.GlobalPanicRecoverString, colors.ClRed)
 		}
 	}()
-
+	go func() {
+		defer close(consts.GlobalMessageChan)
+		select {
+		case msg, ok := <-consts.GlobalMessageChan:
+			if ok {
+				gui.Logs(msg)
+			}
+		}
+	}()
 	lcl.Application.Run()
 }

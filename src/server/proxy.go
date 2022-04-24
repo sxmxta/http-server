@@ -160,11 +160,4 @@ func (m *proxyAddr) init() {
 		}
 	}
 	m.targetUrl = fmt.Sprintf("%s%s", m.targetUrl, m.sourceUrl)
-	//var isTargetUrlLast = len(m.targetUrl)-1 == strings.LastIndex(m.targetUrl, "/")
-	//var isSourceUrlFirst = len(m.sourceUrl)-1 == strings.Index(m.sourceUrl, "/")
-	//if !isTargetUrlLast && !isSourceUrlFirst {
-	//	m.targetUrl = fmt.Sprintf("%s/%s", m.targetUrl, m.sourceUrl)
-	//} else {
-	//	m.targetUrl = fmt.Sprintf("%s%s", m.targetUrl, m.sourceUrl)
-	//}
 }

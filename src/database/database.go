@@ -1,7 +1,9 @@
 package database
 
 import (
+	"fmt"
 	"gitee.com/snxamdf/http-server/src/config"
+	"gitee.com/snxamdf/http-server/src/consts"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -13,12 +15,20 @@ func GetDB() *gorm.DB {
 }
 
 func init() {
-	dbConf := config.GetDBConfig()
+	defer func() {
+		if err := recover(); err != nil {
+			consts.GlobalPanicRecoverString = "初始Sqlite数据库错误 " + (err.(error)).Error()
+		}
+	}()
+	dbConf := config.Cfg.Sqlite3
+	if dbConf.Path == "" || dbConf.Name == "" {
+		consts.GlobalPanicRecoverString = fmt.Sprintf("Sqlite数据库配置错误 Path:%s Name:%s ", dbConf.Path, dbConf.Name)
+		return
+	}
 	var err error
-	var dbName = dbConf.Get("database.path") + dbConf.Get("database.name") + ".db"
-	//fmt.Println(dbName)
+	var dbName = dbConf.Path + dbConf.Name + ".db"
 	db, err = gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		consts.GlobalPanicRecoverString = "打开Sqlite数据库失败:" + err.Error()
 	}
 }
