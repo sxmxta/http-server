@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/consts"
 	"io/ioutil"
 )
@@ -56,19 +57,20 @@ func (m *Proxy) ToJSON() []byte {
 func init() {
 	defer func() {
 		if err := recover(); err != nil {
-			consts.GlobalPanicRecoverString = "读取配置文件 致命错误 " + (err.(error)).Error()
+			consts.AppInitSuccess = false
+			consts.PutColorMessage(colors.ClRed, "读取配置文件 致命错误 ", (err.(error)).Error())
 		}
 	}()
 	byt, err := ioutil.ReadFile("hs.conf.json")
 	if err != nil {
-		//panic("读取配置文件错误：" + err.Error())
-		consts.GlobalPanicRecoverString = "读取配置文件错误：" + err.Error()
+		consts.AppInitSuccess = false
+		consts.PutColorMessage(colors.ClRed, "读取配置文件错误：", err.Error())
 		return
 	}
 	err = json.Unmarshal(byt, Cfg)
 	if err != nil {
-		//panic("解析配置文件错误：" + err.Error())
-		consts.GlobalPanicRecoverString = "解析配置文件错误：" + err.Error()
+		consts.AppInitSuccess = false
+		consts.PutColorMessage(colors.ClRed, "解析配置文件错误：", err.Error())
 		return
 	}
 }

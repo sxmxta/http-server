@@ -154,7 +154,7 @@ func (m *TGUIForm) showHIde() {
 
 var logsLength int
 
-func LogsColor(message string, color int32) {
+func LogsColor(color int32, message string) {
 	lcl.ThreadSync(func() {
 		if color >= 0 {
 			GUIForm.logs.SetSelStart(int32(logsLength))
@@ -175,7 +175,7 @@ func Logs(message ...string) {
 	for _, v := range message {
 		msg += v
 	}
-	LogsColor(msg, -1)
+	LogsColor(-1, msg)
 }
 
 func LogsStaticTime(message ...string) {
@@ -197,6 +197,6 @@ func LogsTime(message ...string) {
 		for _, v := range message {
 			msg += v + " "
 		}
-		LogsColor(msg, -1)
+		LogsColor(-1, msg)
 	}()
 }

@@ -72,10 +72,6 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			request.Header.Add(k, vs)
 		}
 	}
-	//cookie设置
-	//for _, cookie := range r.Cookies() {
-	//	request.AddCookie(cookie)
-	//}
 
 	//fmt.Println("proxy.request.Host",request.Host,"  r.Host",r.Host)
 	//发起代理请求
@@ -92,9 +88,6 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			w.Header().Add(k, vs)
 		}
 	}
-	//for _, cookie := range response.Cookies() {
-	//	r.AddCookie(cookie)
-	//}
 
 	var wi int64
 	//启用代理详情 记录 请求 详情
@@ -127,7 +120,7 @@ func isProxy(r *http.Request) (bool, *proxyAddr) {
 			p.matchUrl = matchUrl
 			p.targetUrl = v.Target
 			p.rewrite = v.Rewrite
-			//初始化代理地址
+			//解析代理配置地址
 			p.init()
 			return true, p
 		}

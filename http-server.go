@@ -23,7 +23,7 @@ func main() {
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.CreateForm(&gui.GUIForm, true)
 	go func() {
-		gui.LogsColor("免责声明：请不要将该软件做为商业用途，本软件使用过程中造成的损失作者本人概不负责。本软件只做分享学习使用。", colors.ClRed)
+		gui.LogsColor(colors.ClRed, "免责声明：请不要将该软件做为商业用途，本软件使用过程中造成的损失作者本人概不负责。本软件只做分享学习使用。")
 		gui.Logs("")
 		gui.Logs("软件说明")
 		gui.Logs("\t本程序是一个简单易用的网站WEB服务，可用做纯静态网页服务，默认监听80端口。")
@@ -36,26 +36,37 @@ func main() {
 		gui.Logs("\t3. 可做http代理转发，代理转发配置，hs.conf.json")
 		gui.Logs("\t4. 本程序放在指定文件夹做为服务目录")
 		gui.Logs("")
-		gui.LogsColor("▁▂▃▄▅▆▇▉▉▉▉▉▉▉  程序信息  ▉▉▉▉▉▉▇▆▅▄▃▂▁", colors.ClBlue)
+		gui.LogsColor(colors.ClBlue, "▁▂▃▄▅▆▇▉▉▉▉▉▉▉  程序信息  ▉▉▉▉▉▉▇▆▅▄▃▂▁")
 		gui.Logs("作  者：YHY")
 		gui.Logs("Email：snxamdf@126.com")
 		gui.Logs("Q   Q：122798224")
 		gui.Logs("开发语言：Golang")
 		gui.Logs("▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉")
-		gui.LogsColor("-------------------------------- 以下服务日志 --------------------------------", colors.ClDarkblue)
-		if consts.GlobalPanicRecoverString == "" {
-			server.StartHttpServer()
-		} else {
-			gui.LogsColor("错误-ERROR "+consts.GlobalPanicRecoverString, colors.ClRed)
-		}
-	}()
-	go func() {
-		defer close(consts.GlobalMessageChan)
-		select {
-		case msg, ok := <-consts.GlobalMessageChan:
-			if ok {
-				gui.Logs(msg)
+		gui.LogsColor(colors.ClDarkblue, "-------------------------------- 以下服务日志 --------------------------------")
+		go func() {
+			for {
+				//如果多路的话需要 for select 配合 使用
+				//单通道只需要for即可
+				select {
+				case msg, ok := <-consts.GlobalMessage:
+					if ok {
+						if msg.Type == 0 {
+							gui.Logs(msg.Message...)
+						} else if msg.Type == 1 {
+							m := ""
+							for _, v := range msg.Message {
+								m += v
+							}
+							gui.LogsColor(msg.Color, m)
+						} else if msg.Type == 2 {
+							gui.LogsTime(msg.Message...)
+						}
+					}
+				}
 			}
+		}()
+		if consts.AppInitSuccess {
+			server.StartHttpServer()
 		}
 	}()
 	lcl.Application.Run()
