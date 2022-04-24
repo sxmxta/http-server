@@ -1,8 +1,6 @@
 package gui
 
 import (
-	"encoding/json"
-	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 )
@@ -11,10 +9,11 @@ var GUIForm = &TGUIForm{}
 
 type TGUIForm struct {
 	*lcl.TForm
-	width  int32
-	height int32
-	logs   *lcl.TRichEdit
-	//logGrid                 *lcl.TStringGrid
+	width                   int32
+	height                  int32
+	logs                    *lcl.TRichEdit
+	proxyLogsGrid           *lcl.TStringGrid     //代理详情列表
+	ProxyDetail             map[int]*ProxyDetail //代理详情数据
 	stbar                   *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	ShowProxyLog            bool
@@ -22,16 +21,16 @@ type TGUIForm struct {
 	ShowStaticLog           bool
 	enableProxyDetailChkBox *lcl.TCheckBox
 	EnableProxyDetail       bool
-	ProxyDetail             map[int]*ProxyDetail
 }
 
 type ProxyDetail struct {
-	ID       int
-	Method   string
-	URL      string
-	Host     string
-	Request  ProxyRequestDetail
-	Response ProxyResponseDetail
+	ID        int
+	Method    string
+	SourceUrl string
+	TargetUrl string
+	Host      string
+	Request   ProxyRequestDetail
+	Response  ProxyResponseDetail
 }
 
 type ProxyRequestDetail struct {
@@ -59,16 +58,9 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.impl()
 }
 
-func (m *TGUIForm) SetProxyDetail(proxyDetail *ProxyDetail) {
-	m.ProxyDetail[proxyDetail.ID] = proxyDetail
-	//add list grid
-	d, _ := json.Marshal(proxyDetail)
-	fmt.Println("\nproxyDetail:", proxyDetail.URL, " JSON:", string(d))
-}
-
 func (m *TGUIForm) init() {
-	m.width = 600
-	m.height = 400
+	m.width = 900
+	m.height = 350
 	icon := lcl.NewIcon()
 	icon.LoadFromFSFile("resources/app.ico")
 	m.SetIcon(icon)

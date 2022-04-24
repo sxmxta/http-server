@@ -35,15 +35,16 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	cli := &http.Client{
 		Jar: jar,
 	}
-	//启用代理详情 记录 请求 详情
+	//启用代理详情 记录 详情 请求
 	if gui.GUIForm.EnableProxyDetail {
 		id++
 		//err = r.ParseForm()
 		proxyDetail = &gui.ProxyDetail{
-			ID:     id,
-			URL:    proxyAddr.targetUrl,
-			Method: r.Method,
-			Host:   r.Host,
+			ID:        id,
+			SourceUrl: proxyAddr.sourceUrl,
+			TargetUrl: proxyAddr.targetUrl,
+			Method:    r.Method,
+			Host:      r.Host,
 			Request: gui.ProxyRequestDetail{
 				URLParams:  r.URL.Query(),
 				FormParams: r.PostForm,
@@ -57,6 +58,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			proxyDetail.Request.Header = r.Header
 			request, err = http.NewRequest(r.Method, proxyAddr.targetUrl, buf)
 		}
+		gui.GUIForm.SetProxyDetail(proxyDetail)
 	} else {
 		request, err = http.NewRequest(r.Method, proxyAddr.targetUrl, r.Body)
 	}
@@ -73,12 +75,14 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			request.Header.Add(k, vs)
 		}
 	}
-
 	//fmt.Println("proxy.request.Host",request.Host,"  r.Host",r.Host)
 	//发起代理请求
 	response, err = cli.Do(request)
 	if err != nil {
-		consts.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy error:", err.Error())
+		if gui.GUIForm.EnableProxyDetail && proxyDetail != nil {
+			gui.GUIForm.SetProxyDetail(proxyDetail)
+		}
+		consts.PutLogsProxyTime(err.Error())
 		return
 	}
 	defer response.Body.Close()
@@ -91,7 +95,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	}
 
 	var wi int64
-	//启用代理详情 记录 请求 详情
+	//启用代理详情 记录 详情 请求
 	if gui.GUIForm.EnableProxyDetail && proxyDetail != nil {
 		buf := new(bytes.Buffer)
 		wi, err = buf.ReadFrom(response.Body)
@@ -141,17 +145,17 @@ func (m *proxyAddr) init() {
 	//判断是否替换 /url/ /url
 	var idxLast = strings.LastIndex(m.matchUrl, "/")
 	var isReplace = len(m.matchUrl)-1 == idxLast
-	if isReplace {
+	var url = m.sourceUrl
+	if !isReplace {
 		//替换
-		m.sourceUrl = m.sourceUrl[idxLast:]
-	} else {
-		//不替换
+		url = url[idxLast:]
 	}
+	//重写替换
 	if m.rewrite != nil {
 		for k, v := range m.rewrite {
 			compile := regexp.MustCompile(k)
-			m.sourceUrl = compile.ReplaceAllString(m.sourceUrl, v)
+			url = compile.ReplaceAllString(url, v)
 		}
 	}
-	m.targetUrl = fmt.Sprintf("%s%s", m.targetUrl, m.sourceUrl)
+	m.targetUrl = fmt.Sprintf("%s%s", m.targetUrl, url)
 }
