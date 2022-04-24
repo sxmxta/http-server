@@ -11,10 +11,10 @@ var GUIForm = &TGUIForm{}
 
 type TGUIForm struct {
 	*lcl.TForm
-	width                   int32
-	height                  int32
-	logs                    *lcl.TRichEdit
-	logGrid                 *lcl.TStringGrid
+	width  int32
+	height int32
+	logs   *lcl.TRichEdit
+	//logGrid                 *lcl.TStringGrid
 	stbar                   *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	ShowProxyLog            bool
