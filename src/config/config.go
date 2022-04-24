@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"gitee.com/snxamdf/http-server/src/consts"
 	"io/ioutil"
 )
@@ -72,5 +71,4 @@ func init() {
 		consts.GlobalPanicRecoverString = "解析配置文件错误：" + err.Error()
 		return
 	}
-	fmt.Println(string(Cfg.ToJSON()))
 }
