@@ -12,9 +12,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 )
 
-var id int
+var id int32
 var jar, _ = cookiejar.New(nil)
 
 func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
@@ -37,7 +38,8 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	}
 	//启用代理详情 记录 详情 请求
 	if gui.GUIForm.EnableProxyDetail {
-		id++
+		atomic.AddInt32(&id, 1)
+		var id = atomic.LoadInt32(&id)
 		//err = r.ParseForm()
 		proxyDetail = &gui.ProxyDetail{
 			ID:        id,

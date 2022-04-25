@@ -29,10 +29,10 @@ func (m *TGUIForm) impl() {
 	//代理
 	m.proxyGrid()
 	// 底部状态条
-	//m.stbar = lcl.NewStatusBar(m)
-	//m.stbar.SetParent(m)
-	//m.stbar.SetAutoHint(true)
-	//m.stbar.SetSimplePanel(true)
+	m.stbar = lcl.NewStatusBar(m)
+	m.stbar.SetParent(m)
+	m.stbar.SetAutoHint(true)
+	m.stbar.SetSimplePanel(true)
 
 	m.showProxyLogChkBox = lcl.NewCheckBox(m)
 	m.showProxyLogChkBox.SetParent(m)

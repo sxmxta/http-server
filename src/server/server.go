@@ -182,7 +182,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var filePath = fmt.Sprintf("%s%s", sites, path)
 		byt, err = ioutil.ReadFile(filePath)
 		if err != nil {
-			var content = `{"code":"911","data":"未找到内部操作资源"}`
+			var content = `{"code":"404","data":"你访问的地址不存在"}`
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(404)
 			_, _ = w.Write([]byte(content))

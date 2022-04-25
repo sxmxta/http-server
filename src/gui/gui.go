@@ -12,8 +12,8 @@ type TGUIForm struct {
 	width                   int32
 	height                  int32
 	logs                    *lcl.TRichEdit
-	proxyLogsGrid           *lcl.TStringGrid     //代理详情列表
-	ProxyDetail             map[int]*ProxyDetail //代理详情数据
+	proxyLogsGrid           *lcl.TStringGrid       //代理详情列表
+	ProxyDetails            map[int32]*ProxyDetail //代理详情数据
 	stbar                   *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	ShowProxyLog            bool
@@ -24,7 +24,7 @@ type TGUIForm struct {
 }
 
 type ProxyDetail struct {
-	ID        int
+	ID        int32
 	Method    string
 	SourceUrl string
 	TargetUrl string
@@ -54,7 +54,7 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.SetWidth(m.width)
 	m.SetHeight(m.height)
 	//m.SetBorderStyle(types.BsSingle)
-	m.ProxyDetail = make(map[int]*ProxyDetail)
+	m.ProxyDetails = make(map[int32]*ProxyDetail)
 	m.impl()
 }
 

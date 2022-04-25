@@ -6,16 +6,16 @@ import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
-	"gitee.com/snxamdf/golcl/lcl/types/messages"
-	"strconv"
+	"sync/atomic"
 )
 
 func (m *TGUIForm) proxyGrid() {
 	//代理
+
 	m.proxyLogsGrid = lcl.NewStringGrid(m)
 	m.proxyLogsGrid.SetParent(m)
-	m.proxyLogsGrid.SetFixedCols(0)
-	m.proxyLogsGrid.SetBounds(0, m.height, m.width, 400)
+	m.proxyLogsGrid.SetScrollBars(types.SsAutoBoth)
+	m.proxyLogsGrid.SetBounds(0, m.height, m.width, 399)
 	// 表格边框样式，这里设置为没有边框
 	m.proxyLogsGrid.SetBorderStyle(types.BsNone)
 	// 设置表格为平面样式
@@ -34,28 +34,9 @@ func (m *TGUIForm) proxyGrid() {
 	// 设置flat后可以用这个修改fixed区域的表格线
 	//m.proxyLogsGrid.SetFixedGridLineColor(colors.ClRed)
 	//m.proxyLogsGrid.SetAnchors(types.NewSet(types.AkBottom, types.AkRight))
-	m.proxyLogsGrid.SetVisible(true)
+	m.proxyLogsGrid.SetVisible(false)
 
-	var colNo = m.proxyLogsGrid.Columns().Add()
-	colNo.SetWidth(100)
-	colNo.Title().SetCaption("序号")
-	colNo.Title().SetAlignment(types.TaCenter)
-	colNo.SetAlignment(types.TaCenter)
-	colNo.SetReadOnly(true)
-	//col1.SetReadOnly(true)
-
-	var colAddr = m.proxyLogsGrid.Columns().Add()
-	colAddr.SetWidth(m.width - 180)
-	colAddr.Title().SetCaption("地址")
-	colAddr.Title().SetAlignment(types.TaCenter)
-	colAddr.SetReadOnly(true)
-
-	var colDetailBtn = m.proxyLogsGrid.Columns().Add()
-	colDetailBtn.SetWidth(60)
-	colDetailBtn.SetButtonStyle(types.CbsButtonColumn)
-	colDetailBtn.Title().SetCaption("详情")
-	colDetailBtn.Title().SetAlignment(types.TaCenter)
-	colDetailBtn.SetAlignment(types.TaCenter)
+	m.proxyLogsGridHead()
 
 	m.proxyLogsGrid.SetOnButtonClick(m.onButtonClick)
 	//m.proxyLogsGrid.SetOnSetEditText(m.onGridSetEditText)
@@ -72,7 +53,7 @@ func (m *TGUIForm) proxyGrid() {
 	// 列表右键
 	var pm = lcl.NewPopupMenu(m.proxyLogsGrid)
 	var item = lcl.NewMenuItem(m.proxyLogsGrid)
-	item.SetCaption("复制")
+	item.SetCaption("复制地址")
 	item.SetShortCutFromString("Ctrl+C")
 	item.SetOnClick(func(lcl.IObject) {
 		if selectCol2Value != "" {
@@ -85,7 +66,7 @@ func (m *TGUIForm) proxyGrid() {
 	item.SetShortCutFromString("Ctrl+Shift+C")
 	item.SetOnClick(func(lcl.IObject) {
 		if selectRowIndex != -1 {
-			if row, ok := m.ProxyDetail[int(selectRowIndex)]; ok {
+			if row, ok := m.ProxyDetails[selectRowIndex]; ok {
 				if d, err := json.Marshal(row); err == nil {
 					lcl.Clipboard.SetAsText(string(d))
 				}
@@ -97,9 +78,9 @@ func (m *TGUIForm) proxyGrid() {
 	item.SetCaption("清空")
 	//item.SetShortCutFromString("")
 	item.SetOnClick(func(lcl.IObject) {
-		//m.proxyLogsGrid.Clear()
+		m.proxyLogsGridClear()
 	})
-	//pm.Items().Add(item)
+	pm.Items().Add(item)
 	//添加到右键菜单
 	m.proxyLogsGrid.SetPopupMenu(pm)
 
@@ -111,12 +92,45 @@ func (m *TGUIForm) proxyGrid() {
 	//})
 }
 
+func (m *TGUIForm) proxyLogsGridHead() {
+	var colNo = m.proxyLogsGrid.Columns().Add()
+	colNo.SetWidth(100)
+	colNo.Title().SetCaption("序号")
+	colNo.Title().SetAlignment(types.TaCenter)
+	colNo.SetAlignment(types.TaCenter)
+	colNo.SetReadOnly(true)
+	//col1.SetReadOnly(true)
+
+	var colAddr = m.proxyLogsGrid.Columns().Add()
+	colAddr.SetWidth(m.width - 180)
+	colAddr.Title().SetCaption("地址 - (右键菜单复制)")
+	colAddr.Title().SetAlignment(types.TaCenter)
+	colAddr.SetReadOnly(true)
+
+	var colDetailBtn = m.proxyLogsGrid.Columns().Add()
+	colDetailBtn.SetWidth(60)
+	colDetailBtn.SetButtonStyle(types.CbsButtonColumn)
+	colDetailBtn.Title().SetCaption("详情")
+	colDetailBtn.Title().SetAlignment(types.TaCenter)
+	colDetailBtn.SetAlignment(types.TaCenter)
+}
+
+func (m *TGUIForm) proxyLogsGridClear() {
+	m.proxyLogsGrid.Clear()
+	selectCol2Value = ""
+	selectRowIndex = -1
+	rows = 1
+
+	m.proxyLogsGrid.SetRowCount(rows)
+	//m.proxyLogsGridHead()
+}
+
 //查看详情点击
 func (m *TGUIForm) onButtonClick(sender lcl.IObject, aCol, aRow int32) {
 	fmt.Println("click col", aCol, " row", aRow)
 	if aCol == 2 { //查看详情点击
-		if row, ok := m.ProxyDetail[int(aRow)]; ok {
-			d, _ := json.Marshal(m.ProxyDetail[int(aRow)])
+		if row, ok := m.ProxyDetails[aRow]; ok {
+			d, _ := json.Marshal(m.ProxyDetails[aRow])
 			fmt.Println("proxyDetail:", row.TargetUrl, " JSON:", string(d))
 		}
 	}
@@ -130,22 +144,24 @@ var (
 	selectCol2Value string
 	selectRowIndex  int32 = -1
 	rows            int32 = 1
+	insertRow       int32 = 1
 )
 
 func (m *TGUIForm) AddProxyLogsGrid(proxyDetail *ProxyDetail) {
 	lcl.ThreadSync(func() {
-		rows++
-		m.proxyLogsGrid.SetRowCount(rows)
-		m.proxyLogsGrid.SetCells(0, rows-1, strconv.Itoa(proxyDetail.ID))
-		m.proxyLogsGrid.SetCells(1, rows-1, proxyDetail.TargetUrl)
-		m.proxyLogsGrid.SetCells(2, rows-1, "查看")
-		m.proxyLogsGrid.Perform(messages.EM_SCROLLCARET, 7, 0)
+		m.proxyLogsGrid.InsertColRow(false, insertRow)
+		m.proxyLogsGrid.SetCells(0, insertRow, fmt.Sprintf("%v", proxyDetail.ID))
+		m.proxyLogsGrid.SetCells(1, insertRow, proxyDetail.TargetUrl)
+		m.proxyLogsGrid.SetCells(2, insertRow, "查看")
+		atomic.AddInt32(&rows, 1)
+		var r = atomic.LoadInt32(&rows)
+		m.proxyLogsGrid.SetRowCount(r)
 	})
 }
 
 func (m *TGUIForm) SetProxyDetail(proxyDetail *ProxyDetail) {
-	if _, ok := m.ProxyDetail[proxyDetail.ID]; !ok {
+	if _, ok := m.ProxyDetails[proxyDetail.ID]; !ok {
 		m.AddProxyLogsGrid(proxyDetail)
 	}
-	m.ProxyDetail[proxyDetail.ID] = proxyDetail
+	m.ProxyDetails[proxyDetail.ID] = proxyDetail
 }
