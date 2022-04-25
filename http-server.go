@@ -18,10 +18,6 @@ var libs embed.FS
 
 func main() {
 	inits.Init(&libs, &resources)
-	lcl.Application.Initialize()
-	lcl.Application.SetTitle("Http Web Server")
-	lcl.Application.SetMainFormOnTaskBar(true)
-	lcl.Application.CreateForm(&gui.GUIForm, true)
 	go func() {
 		gui.LogsColor(colors.ClRed, "免责声明：请不要将该软件做为商业用途，本软件使用过程中造成的损失作者本人概不负责。本软件只做分享学习使用。")
 		gui.Logs("")
@@ -73,5 +69,5 @@ func main() {
 			server.StartHttpServer()
 		}
 	}()
-	lcl.Application.Run()
+	lcl.RunApp(&gui.GUIForm)
 }

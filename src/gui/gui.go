@@ -12,8 +12,9 @@ type TGUIForm struct {
 	width                   int32
 	height                  int32
 	logs                    *lcl.TRichEdit
-	proxyLogsGrid           *lcl.TStringGrid       //代理详情列表
-	ProxyDetails            map[int32]*ProxyDetail //代理详情数据
+	proxyLogsGrid           *lcl.TStringGrid       //代理详情列表UI
+	ProxyDetails            map[int32]*ProxyDetail //代理详情数据集合
+	ProxyDetailUI           *ProxyDetailUI         //代理PanelUI
 	stbar                   *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	ShowProxyLog            bool
@@ -51,15 +52,15 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.SetCaption("Http Web Server")
 	m.SetPosition(types.PoScreenCenter)
 	//m.EnabledMaximize(false)
+	m.SetBorderStyle(types.BsSingle)
 	m.SetWidth(m.width)
 	m.SetHeight(m.height)
-	//m.SetBorderStyle(types.BsSingle)
 	m.ProxyDetails = make(map[int32]*ProxyDetail)
 	m.impl()
 }
 
 func (m *TGUIForm) init() {
-	m.width = 900
+	m.width = 600
 	m.height = 350
 	icon := lcl.NewIcon()
 	icon.LoadFromFSFile("resources/app.ico")

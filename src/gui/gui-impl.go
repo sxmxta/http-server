@@ -13,9 +13,7 @@ func (m *TGUIForm) impl() {
 	m.logs = lcl.NewRichEdit(m)
 	m.logs.SetParent(m)
 	m.logs.Font().SetSize(10)
-	m.logs.SetWidth(m.width)
-	m.logs.SetHeight(m.height - 20)
-	m.logs.SetTop(20)
+	m.logs.SetBounds(0, 20, m.width, m.height-20)
 	m.logs.SetScrollBars(types.SsAutoBoth)
 	m.logs.SetReadOnly(true)
 	m.logs.SetOnDblClick(func(sender lcl.IObject) {
@@ -24,9 +22,9 @@ func (m *TGUIForm) impl() {
 	})
 	m.logs.SetHint("双击清空")
 	m.logs.SetShowHint(true)
-	m.logs.SetVisible(false)
+	//m.logs.SetVisible(false)
 
-	//代理
+	//代理日志列表
 	m.proxyGrid()
 	// 底部状态条
 	m.stbar = lcl.NewStatusBar(m)
@@ -54,11 +52,23 @@ func (m *TGUIForm) impl() {
 		m.EnableProxyDetail = m.enableProxyDetailChkBox.Checked()
 		if m.EnableProxyDetail {
 			m.SetHeight(m.Height() + 400)
+			m.SetWidth(m.Width() + m.width)
+			//m.EnabledMaximize(true)
+			m.SetBorderStyle(types.BsSizeable)
 		} else {
-			m.SetHeight(m.Height() - 400)
+			//m.EnabledMaximize(false)
+			if m.WindowState() == types.WsMaximized {
+				m.SetWindowState(types.WsNormal)
+			}
+			m.SetHeight(m.height)
+			m.SetWidth(m.width)
+			m.SetBorderStyle(types.BsSingle)
 		}
 		m.proxyLogsGrid.SetVisible(m.EnableProxyDetail)
-
+		if m.ProxyDetailUI == nil {
+			m.proxyDetailPanelInit()
+		}
+		m.ProxyDetailUI.DetailPanel.SetVisible(m.EnableProxyDetail)
 	})
 
 	m.showStaticLogChkBox = lcl.NewCheckBox(m)

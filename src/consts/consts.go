@@ -1,14 +1,27 @@
 package consts
 
+import "strings"
+
 var (
 	AppInitSuccess = true
 	GlobalMessage  = make(chan MessageChannel)
+	HttpMethods    = []string{"GET", "POST", "HEAD", "PUT", "DELETE", "CONNECT", "OPTIONS"}
 )
 
 type MessageChannel struct {
 	Type    int
 	Message []string
 	Color   int32
+}
+
+func GetHttpMethodsIdx(methodName string) int {
+	methodName = strings.ToUpper(strings.Trim(methodName, " "))
+	for i, method := range HttpMethods {
+		if method == methodName {
+			return i
+		}
+	}
+	return -1
 }
 
 //普通消息
