@@ -5,7 +5,7 @@ import (
 	"gitee.com/snxamdf/golcl/inits"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
-	"gitee.com/snxamdf/http-server/src/consts"
+	"gitee.com/snxamdf/http-server/src/entity"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"gitee.com/snxamdf/http-server/src/server"
 )
@@ -44,7 +44,7 @@ func main() {
 				//如果多路的话需要 for select 配合 使用
 				//单通道只需要for即可
 				select {
-				case msg, ok := <-consts.GlobalMessage:
+				case msg, ok := <-entity.GlobalLogMessageChan:
 					if ok {
 						if msg.Type == 0 {
 							gui.Logs(msg.Message...)
@@ -65,7 +65,7 @@ func main() {
 				}
 			}
 		}()
-		if consts.AppInitSuccess {
+		if entity.AppInitSuccess {
 			server.StartHttpServer()
 		}
 	}()

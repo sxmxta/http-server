@@ -4,6 +4,7 @@ import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/messages"
+	"gitee.com/snxamdf/http-server/src/entity"
 	"math"
 	"strings"
 	"time"
@@ -38,10 +39,10 @@ func (m *TGUIForm) impl() {
 	m.showProxyLogChkBox.SetBounds(10, 0, 0, 0)
 	m.showProxyLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	m.showProxyLogChkBox.SetOnClick(func(sender lcl.IObject) {
-		m.ShowProxyLog = m.showProxyLogChkBox.Checked()
+		entity.ShowProxyLog = m.showProxyLogChkBox.Checked()
 	})
 	m.showProxyLogChkBox.SetChecked(true)
-	m.ShowProxyLog = true
+	entity.ShowProxyLog = true
 
 	m.enableProxyDetailChkBox = lcl.NewCheckBox(m)
 	m.enableProxyDetailChkBox.SetParent(m)
@@ -50,8 +51,8 @@ func (m *TGUIForm) impl() {
 	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	//代理详情checkBox
 	m.enableProxyDetailChkBox.SetOnClick(func(sender lcl.IObject) {
-		m.EnableProxyDetail = m.enableProxyDetailChkBox.Checked()
-		if m.EnableProxyDetail {
+		entity.EnableProxyDetail = m.enableProxyDetailChkBox.Checked()
+		if entity.EnableProxyDetail {
 			m.SetHeight(m.Height() + 400)
 			m.SetWidth(m.Width() + m.width)
 			//m.EnabledMaximize(true)
@@ -65,11 +66,11 @@ func (m *TGUIForm) impl() {
 			m.SetWidth(m.width)
 			m.SetBorderStyle(types.BsSingle)
 		}
-		m.proxyLogsGrid.SetVisible(m.EnableProxyDetail)
 		if m.ProxyDetailUI == nil {
 			m.proxyDetailPanelInit()
 		}
-		m.ProxyDetailUI.TPanel.SetVisible(m.EnableProxyDetail)
+		m.proxyLogsGrid.SetVisible(entity.EnableProxyDetail)
+		m.ProxyDetailUI.TPanel.SetVisible(entity.EnableProxyDetail)
 	})
 
 	m.showStaticLogChkBox = lcl.NewCheckBox(m)
@@ -78,10 +79,10 @@ func (m *TGUIForm) impl() {
 	m.showStaticLogChkBox.SetBounds(m.enableProxyDetailChkBox.Left()+110, 0, 0, 0)
 	m.showStaticLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	m.showStaticLogChkBox.SetOnClick(func(sender lcl.IObject) {
-		m.ShowStaticLog = m.showStaticLogChkBox.Checked()
+		entity.ShowStaticLog = m.showStaticLogChkBox.Checked()
 	})
 	m.showStaticLogChkBox.SetChecked(true)
-	m.ShowStaticLog = true
+	entity.ShowStaticLog = true
 
 	trayIcon := lcl.NewTrayIcon(m)
 	trayIcon.SetHint(m.Caption())
@@ -169,13 +170,13 @@ func Logs(message ...string) {
 }
 
 func LogsStaticTime(message ...string) {
-	if GUIForm.ShowStaticLog {
+	if entity.ShowStaticLog {
 		LogsTime(message...)
 	}
 }
 
 func LogsProxyTime(message ...string) {
-	if GUIForm.ShowProxyLog {
+	if entity.ShowProxyLog {
 		LogsTime(message...)
 	}
 }

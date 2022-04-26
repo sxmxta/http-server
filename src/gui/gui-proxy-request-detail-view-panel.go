@@ -5,6 +5,7 @@ import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/http-server/src/consts"
+	"gitee.com/snxamdf/http-server/src/entity"
 )
 
 //代理详情查看Panel
@@ -73,4 +74,18 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.TargetEdit.SetLabelPosition(types.LpLeft)
 	m.TargetEdit.EditLabel().SetCaption("目标地址")
 	m.TargetEdit.SetBounds(left, top, width, height)
+}
+
+//更新请求标签UI
+func (m *RequestDetailViewPanel) updateRequestSheet(proxyDetail *entity.ProxyDetail) {
+	m.IdEdit.SetText(fmt.Sprintf("%v", proxyDetail.ID))
+	m.HostEdit.SetText(proxyDetail.Host)
+	m.MethodComboBox.SetItemIndex(int32(consts.GetHttpMethodsIdx(proxyDetail.Method)))
+	m.SourceEdit.SetText(proxyDetail.SourceUrl)
+	m.TargetEdit.SetText(proxyDetail.TargetUrl)
+}
+
+//更新响应标签UI
+func (m *RequestDetailViewPanel) updateResponseSheet(proxyDetail *entity.ProxyDetail) {
+
 }

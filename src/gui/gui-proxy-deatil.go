@@ -67,13 +67,6 @@ func (m *TGUIForm) proxyDetailPanelInit() {
 	//代理详情查看PanelUI
 	m.ProxyDetailUI.ProxyInterceptConfigPanel.initUI()
 
-	////请求sheet
-	//top = 0
-	//m.ProxyDetailUI.requestSheetUI(left, top, width, height)
-	////响应sheet
-	//m.ProxyDetailUI.responseSheetUI()
-	////代理拦截配置sheet
-	//m.ProxyDetailUI.proxyInterceptSheetUI()
 }
 
 //请求响应Page
@@ -105,18 +98,4 @@ func (m *ProxyDetailPanel) proxyPages(left, top, width, height int32) {
 	m.ProxyInterceptConfigPanel.TPanel.SetParent(sheet)
 	m.ProxyInterceptConfigPanel.TPanel.SetBounds(0, 0, width, height)
 	m.ProxyInterceptConfigPanel.TPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
-}
-
-//更新请求标签UI
-func (m *ProxyDetailPanel) updateRequestSheet(proxyDetail *ProxyDetail) {
-	//m.IdEdit.SetText(fmt.Sprintf("%v", proxyDetail.ID))
-	//m.HostEdit.SetText(proxyDetail.Host)
-	//m.MethodComboBox.SetItemIndex(int32(consts.GetHttpMethodsIdx(proxyDetail.Method)))
-	//m.SourceEdit.SetText(proxyDetail.SourceUrl)
-	//m.TargetEdit.SetText(proxyDetail.TargetUrl)
-}
-
-//更新响应标签UI
-func (m *ProxyDetailPanel) updateResponseSheet(proxyDetail *ProxyDetail) {
-
 }

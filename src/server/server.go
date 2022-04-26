@@ -7,7 +7,7 @@ import (
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
-	"gitee.com/snxamdf/http-server/src/consts"
+	"gitee.com/snxamdf/http-server/src/entity"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,8 +20,8 @@ var contentType = map[string]string{}
 func Init() {
 	mimeTypes, err := emfs.GetResources("resources/mime-types.conf")
 	if err != nil {
-		consts.AppInitSuccess = false
-		consts.PutColorMessage(colors.ClRed, err.Error())
+		entity.AppInitSuccess = false
+		entity.PutColorMessage(colors.ClRed, err.Error())
 	} else {
 		var types = strings.Split(string(mimeTypes), "\n")
 		for _, mime := range types {
@@ -70,7 +70,7 @@ func (m *Context) Write(data interface{}) {
 		r["data"] = data
 		var b, err = common.ToJson(r)
 		if err != nil {
-			consts.PutMessage(err.Error())
+			entity.PutMessage(err.Error())
 		}
 		m.response.Write(b)
 	}
@@ -112,7 +112,7 @@ type Handler interface {
 }
 
 func RegisterRoute(route string, handler HandlerFUNC) {
-	consts.PutMessage("register route -> ", route)
+	entity.PutMessage("register route -> ", route)
 	routeMapper[route] = handler
 }
 
@@ -132,14 +132,14 @@ func StartHttpServer() error {
 	mux.Handle("/", &HttpServerHandler{})
 	t := time.Now()
 	msg := t.Format("2006-01-02 15:04:05")
-	consts.PutMessage("Http Server 启动中......")
-	consts.PutMessage("Http Server 启动时间: " + msg)
-	consts.PutMessage(fmt.Sprintf("%v: %v", "Http Server Listen:", addr))
-	consts.PutMessage("Http Server Proxy: ", string(config.Cfg.Proxy.ToJSON()))
+	entity.PutMessage("Http Server 启动中......")
+	entity.PutMessage("Http Server 启动时间: " + msg)
+	entity.PutMessage(fmt.Sprintf("%v: %v", "Http Server Listen:", addr))
+	entity.PutMessage("Http Server Proxy: ", string(config.Cfg.Proxy.ToJSON()))
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {
-		consts.PutMessage("Http Server 启动失败")
-		consts.PutColorMessage(colors.ClRed, err.Error())
+		entity.PutMessage("Http Server 启动失败")
+		entity.PutColorMessage(colors.ClRed, err.Error())
 	}
 	return err
 }
@@ -149,7 +149,7 @@ type HttpServerHandler struct{}
 func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			consts.PutMessage("Http 致命错误")
+			entity.PutMessage("Http 致命错误")
 		}
 	}()
 	var path = r.URL.Path
@@ -159,7 +159,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		//w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		consts.PutMessage("请求URL:", path)
+		entity.PutMessage("请求URL:", path)
 		//if r.Method == "OPTIONS" {
 		//	return
 		//}

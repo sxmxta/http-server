@@ -3,6 +3,7 @@ package gui
 import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
+	"gitee.com/snxamdf/http-server/src/entity"
 )
 
 var GUIForm = &TGUIForm{}
@@ -12,39 +13,13 @@ type TGUIForm struct {
 	width                   int32
 	height                  int32
 	logs                    *lcl.TRichEdit
-	proxyLogsGrid           *lcl.TStringGrid       //代理详情列表UI
-	ProxyDetails            map[int32]*ProxyDetail //代理详情数据集合
-	ProxyDetailUI           *ProxyDetailPanel      //代理PanelUI
+	proxyLogsGrid           *lcl.TStringGrid              //代理详情列表UI
+	ProxyDetails            map[int32]*entity.ProxyDetail //代理详情数据集合
+	ProxyDetailUI           *ProxyDetailPanel             //代理PanelUI
 	stbar                   *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
-	ShowProxyLog            bool
 	showStaticLogChkBox     *lcl.TCheckBox
-	ShowStaticLog           bool
 	enableProxyDetailChkBox *lcl.TCheckBox
-	EnableProxyDetail       bool
-}
-
-type ProxyDetail struct {
-	ID        int32
-	Method    string
-	SourceUrl string
-	TargetUrl string
-	Host      string
-	Request   ProxyRequestDetail
-	Response  ProxyResponseDetail
-}
-
-type ProxyRequestDetail struct {
-	Header     map[string][]string
-	Body       string
-	URLParams  map[string][]string
-	FormParams map[string][]string
-}
-
-type ProxyResponseDetail struct {
-	Header map[string][]string
-	Body   string
-	Size   int64
 }
 
 func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
@@ -55,8 +30,10 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.SetBorderStyle(types.BsSingle)
 	m.SetWidth(m.width)
 	m.SetHeight(m.height)
-	m.ProxyDetails = make(map[int32]*ProxyDetail)
+	m.ProxyDetails = make(map[int32]*entity.ProxyDetail)
 	m.impl()
+	//数据监听
+	go m.dataListen()
 }
 
 func (m *TGUIForm) init() {
@@ -65,4 +42,14 @@ func (m *TGUIForm) init() {
 	icon := lcl.NewIcon()
 	icon.LoadFromFSFile("resources/app.ico")
 	m.SetIcon(icon)
+}
+
+func (m *TGUIForm) dataListen() {
+	for {
+		select {
+		case proxyDetail := <-entity.ProxyDetailChan:
+			//fmt.Printf("%+v\n", proxyDetail)
+			m.setProxyDetail(proxyDetail)
+		}
+	}
 }

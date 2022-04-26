@@ -76,7 +76,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 func (m *ProxyInterceptResponsePanel) initUI() {
 	resetVars()
 	left = 0
-	top = 0
+	top = 25
 	width = m.TPanel.Width()
 	height = m.TPanel.Height()
 
@@ -111,7 +111,7 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 
 }
 
-//请求sheet
+//代理拦截配置Panel
 func (m *ProxyInterceptPanel) initUI() {
 	resetVars()
 	left = 0
@@ -154,4 +154,5 @@ func (m *ProxyInterceptPanel) initUI() {
 	//初始化子组件
 	m.ProxyInterceptRequestPanel.initUI()
 	m.ProxyInterceptResponsePanel.initUI()
+	m.ProxyInterceptSettingPanel.initUI()
 }

@@ -6,6 +6,7 @@ import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
+	"gitee.com/snxamdf/http-server/src/entity"
 	"sync"
 	"sync/atomic"
 )
@@ -96,19 +97,12 @@ func (m *TGUIForm) proxyGrid() {
 
 	//添加到右键菜单
 	m.proxyLogsGrid.SetPopupMenu(pm)
-
-	//m.SetOnResize(func(sender lcl.IObject) {
-	//	col2.SetWidth(m.Width() - 225)
-	//})
-	//m.SetOnConstrainedResize(func(sender lcl.IObject, minWidth, minHeight, maxWidth, maxHeight *int32) {
-	//	col2.SetWidth(m.Width() - 225)
-	//})
 }
 
 func (m *TGUIForm) gridClick() {
 	if rowData, ok := m.ProxyDetails[selectRowIndex]; ok {
-		m.ProxyDetailUI.updateRequestSheet(rowData)
-		m.ProxyDetailUI.updateResponseSheet(rowData)
+		m.ProxyDetailUI.RequestDetailViewPanel.updateRequestSheet(rowData)
+		m.ProxyDetailUI.RequestDetailViewPanel.updateResponseSheet(rowData)
 		if d, err := json.Marshal(rowData); err == nil {
 			fmt.Println(" row", selectRowIndex, "proxyDetail:", rowData.TargetUrl, " JSON:", string(d))
 		}
@@ -158,7 +152,7 @@ var (
 	insertRow       int32 = 1
 )
 
-func (m *TGUIForm) AddProxyLogsGrid(proxyDetail *ProxyDetail) {
+func (m *TGUIForm) AddProxyLogsGrid(proxyDetail *entity.ProxyDetail) {
 	lcl.ThreadSync(func() {
 		m.proxyLogsGrid.InsertColRow(false, insertRow)
 		m.proxyLogsGrid.SetCells(0, insertRow, fmt.Sprintf("%v", proxyDetail.ID))
@@ -172,7 +166,7 @@ func (m *TGUIForm) AddProxyLogsGrid(proxyDetail *ProxyDetail) {
 
 var lock = sync.RWMutex{}
 
-func (m *TGUIForm) SetProxyDetail(proxyDetail *ProxyDetail) {
+func (m *TGUIForm) setProxyDetail(proxyDetail *entity.ProxyDetail) {
 	lock.Lock()
 	defer lock.Unlock()
 	if _, ok := m.ProxyDetails[proxyDetail.ID]; !ok {
