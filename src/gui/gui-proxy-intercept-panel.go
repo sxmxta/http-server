@@ -120,30 +120,46 @@ func (m *ProxyInterceptPanel) initUI() {
 	reqPageControl.SetBounds(left, top, width, height)
 	reqPageControl.SetAlign(types.AlClient)
 
-	sheet := lcl.NewTabSheet(reqPageControl) //标签页
-	sheet.SetPageControl(reqPageControl)
-	sheet.SetCaption("　拦截请求　")
-	sheet.SetAlign(types.AlClient)
+	sheetInterReq := lcl.NewTabSheet(reqPageControl) //标签页
+	sheetInterReq.SetPageControl(reqPageControl)
+	sheetInterReq.SetCaption("　拦截请求　")
+	sheetInterReq.SetAlign(types.AlClient)
 	m.ProxyInterceptRequestPanel.TPanel = lcl.NewPanel(m.TPanel) //ProxyInterceptRequestPanel 标签页
-	m.ProxyInterceptRequestPanel.TPanel.SetParent(sheet)
+	m.ProxyInterceptRequestPanel.TPanel.SetParent(sheetInterReq)
 	m.ProxyInterceptRequestPanel.TPanel.SetBounds(0, 0, width, height)
 	m.ProxyInterceptRequestPanel.TPanel.SetAlign(types.AlClient)
 
-	sheet = lcl.NewTabSheet(reqPageControl) //标签页
-	sheet.SetPageControl(reqPageControl)
-	sheet.SetCaption("　拦截响应　")
+	sheetInterRes := lcl.NewTabSheet(reqPageControl) //标签页
+	sheetInterRes.SetPageControl(reqPageControl)
+	sheetInterRes.SetCaption("　拦截响应　")
+	sheetInterRes.SetAlign(types.AlClient)
 	m.ProxyInterceptResponsePanel.TPanel = lcl.NewPanel(m.TPanel) //responsePanel 标签页
-	m.ProxyInterceptResponsePanel.TPanel.SetParent(sheet)
+	m.ProxyInterceptResponsePanel.TPanel.SetParent(sheetInterRes)
 	m.ProxyInterceptResponsePanel.TPanel.SetBounds(0, 0, width, height)
 	m.ProxyInterceptResponsePanel.TPanel.SetAlign(types.AlClient)
 
-	sheet = lcl.NewTabSheet(reqPageControl) //标签页
-	sheet.SetPageControl(reqPageControl)
-	sheet.SetCaption("　拦截配置　")
+	sheetInterSet := lcl.NewTabSheet(reqPageControl) //标签页
+	sheetInterSet.SetPageControl(reqPageControl)
+	sheetInterSet.SetCaption("　拦截配置　")
+	sheetInterSet.SetAlign(types.AlClient)
 	m.ProxyInterceptSettingPanel.TPanel = lcl.NewPanel(m.TPanel) //responsePanel 标签页
-	m.ProxyInterceptSettingPanel.TPanel.SetParent(sheet)
+	m.ProxyInterceptSettingPanel.TPanel.SetParent(sheetInterSet)
 	m.ProxyInterceptSettingPanel.TPanel.SetBounds(0, 0, width, height)
 	m.ProxyInterceptSettingPanel.TPanel.SetAlign(types.AlClient)
+
+	//测试 tabs 切换
+	testBtn := lcl.NewButton(m.TPanel)
+	testBtn.SetParent(m.TPanel)
+	testBtn.SetCaption("测试切换")
+	testBtn.SetLeft(300)
+	var is int32 = 1
+	testBtn.SetOnClick(func(sender lcl.IObject) {
+		reqPageControl.SetActivePageIndex(is)
+		is++
+		if is > 2 {
+			is = 0
+		}
+	})
 
 	//初始化子组件
 	m.ProxyInterceptRequestPanel.initUI()
