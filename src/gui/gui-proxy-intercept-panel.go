@@ -147,7 +147,7 @@ func (m *ProxyInterceptPanel) initUI() {
 	m.ProxyInterceptSettingPanel.TPanel.SetBounds(0, 0, width, height)
 	m.ProxyInterceptSettingPanel.TPanel.SetAlign(types.AlClient)
 
-	//测试 tabs 切换
+	//TODO 测试 tabs 切换
 	testBtn := lcl.NewButton(m.TPanel)
 	testBtn.SetParent(m.TPanel)
 	testBtn.SetCaption("测试切换")
