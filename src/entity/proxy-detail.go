@@ -6,7 +6,7 @@ import "gitee.com/snxamdf/http-server/src/consts"
 type ProxyDetail struct {
 	Error     error               `json:"-"`
 	State     consts.ProxyFlow    `json:"-"`
-	ID        int32               `json:"id"`
+	ID        int32               `json:"-"`
 	Method    string              `json:"method"`
 	SourceUrl string              `json:"source_url"`
 	TargetUrl string              `json:"target_url"`
