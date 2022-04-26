@@ -48,6 +48,7 @@ func (m *TGUIForm) impl() {
 	m.enableProxyDetailChkBox.SetCaption("启用代理详情")
 	m.enableProxyDetailChkBox.SetBounds(m.showProxyLogChkBox.Left()+130, 0, 0, 0)
 	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
+	//代理详情checkBox
 	m.enableProxyDetailChkBox.SetOnClick(func(sender lcl.IObject) {
 		m.EnableProxyDetail = m.enableProxyDetailChkBox.Checked()
 		if m.EnableProxyDetail {
@@ -68,7 +69,7 @@ func (m *TGUIForm) impl() {
 		if m.ProxyDetailUI == nil {
 			m.proxyDetailPanelInit()
 		}
-		m.ProxyDetailUI.DetailPanel.SetVisible(m.EnableProxyDetail)
+		m.ProxyDetailUI.TPanel.SetVisible(m.EnableProxyDetail)
 	})
 
 	m.showStaticLogChkBox = lcl.NewCheckBox(m)
@@ -99,6 +100,18 @@ func (m *TGUIForm) impl() {
 	})
 	trayIcon.SetOnClick(func(sender lcl.IObject) {
 		m.showHIde()
+	})
+	m.SetOnResize(func(sender lcl.IObject) {
+		var mh = m.Height()
+		mh = mh - m.height - 20
+		m.proxyLogsGrid.SetHeight(mh)
+	})
+	m.SetOnConstrainedResize(func(sender lcl.IObject, minWidth, minHeight, maxWidth, maxHeight *int32) {
+		//fmt.Println(*minWidth, *minHeight, *maxWidth, *maxHeight)
+		//m.proxyLogsGrid.SetBounds(0, m.height, m.width, 380)
+		var mh = m.Height()
+		mh = mh - m.height - 20
+		m.proxyLogsGrid.SetHeight(mh)
 	})
 	pm := lcl.NewPopupMenu(m)
 	item := lcl.NewMenuItem(m)

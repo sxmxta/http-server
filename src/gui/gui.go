@@ -14,7 +14,7 @@ type TGUIForm struct {
 	logs                    *lcl.TRichEdit
 	proxyLogsGrid           *lcl.TStringGrid       //代理详情列表UI
 	ProxyDetails            map[int32]*ProxyDetail //代理详情数据集合
-	ProxyDetailUI           *ProxyDetailUI         //代理PanelUI
+	ProxyDetailUI           *ProxyDetailPanel      //代理PanelUI
 	stbar                   *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	ShowProxyLog            bool

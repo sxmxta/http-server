@@ -12,11 +12,12 @@ import (
 
 func (m *TGUIForm) proxyGrid() {
 	//代理
-
 	m.proxyLogsGrid = lcl.NewStringGrid(m)
 	m.proxyLogsGrid.SetParent(m)
 	m.proxyLogsGrid.SetScrollBars(types.SsAutoBoth)
-	m.proxyLogsGrid.SetBounds(0, m.height, m.width, 380)
+	var mh = m.Height()
+	mh = mh - m.height - 20
+	m.proxyLogsGrid.SetBounds(0, m.height, m.width, mh)
 	//m.proxyLogsGrid.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop))
 	// 表格边框样式，这里设置为没有边框
 	m.proxyLogsGrid.SetBorderStyle(types.BsNone)

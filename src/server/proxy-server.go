@@ -118,12 +118,19 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type proxyAddr struct {
+	sourceUrl string
+	matchUrl  string
+	targetUrl string
+	rewrite   map[string]string
+}
+
+//url = / /path /path/ /path/path /path/path/
 func isProxy(r *http.Request) (bool, *proxyAddr) {
 	urlPath := r.URL.String()
-	proxyMap := config.Cfg.Proxy.Proxy
-	p := &proxyAddr{sourceUrl: urlPath}
-	for matchUrl, v := range proxyMap {
+	for matchUrl, v := range config.Cfg.Proxy.Proxy {
 		if strings.Index(urlPath, matchUrl) == 0 {
+			p := &proxyAddr{sourceUrl: urlPath}
 			p.matchUrl = matchUrl
 			p.targetUrl = v.Target
 			p.rewrite = v.Rewrite
@@ -135,20 +142,13 @@ func isProxy(r *http.Request) (bool, *proxyAddr) {
 	return false, nil
 }
 
-type proxyAddr struct {
-	sourceUrl string
-	matchUrl  string
-	targetUrl string
-	rewrite   map[string]string
-}
-
 func (m *proxyAddr) init() {
 	// /dam/service/configs/get_one?name=configurable.web.dam.appname&callback=jQuery360046561208122962516_1650637061068&_=1650637061069
 	//判断是否替换 /url/ /url
 	var idxLast = strings.LastIndex(m.matchUrl, "/")
 	var isReplace = len(m.matchUrl)-1 == idxLast
 	var url = m.sourceUrl
-	if !isReplace {
+	if isReplace {
 		//替换
 		url = url[idxLast:]
 	}
