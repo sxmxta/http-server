@@ -30,8 +30,9 @@ func (m *TGUIForm) impl() {
 	// 底部状态条
 	m.stbar = lcl.NewStatusBar(m)
 	m.stbar.SetParent(m)
-	m.stbar.SetAutoHint(true)
-	m.stbar.SetSimplePanel(true)
+	//m.stbar.SetAutoHint(true)
+	m.stbar.SetSimplePanel(false)
+	m.stbar.Panels().Add().SetText("https://gitee.com/snxamdf/http-server")
 
 	m.showProxyLogChkBox = lcl.NewCheckBox(m)
 	m.showProxyLogChkBox.SetParent(m)
@@ -55,10 +56,8 @@ func (m *TGUIForm) impl() {
 		if entity.EnableProxyDetail {
 			m.SetHeight(m.Height() + 400)
 			m.SetWidth(m.Width() + m.width)
-			//m.EnabledMaximize(true)
 			m.SetBorderStyle(types.BsSizeable)
 		} else {
-			//m.EnabledMaximize(false)
 			if m.WindowState() == types.WsMaximized {
 				m.SetWindowState(types.WsNormal)
 			}
