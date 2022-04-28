@@ -77,7 +77,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	reqQueryParamAddBtn.SetCaption("　添加参数　")
 	reqQueryParamAddBtn.SetBounds(460, 1, 60, 30)
 	reqQueryParamAddBtn.SetOnClick(func(sender lcl.IObject) {
-		m.RequestQueryParamsGridAdd("", "")
+		m.QueryParamsGridAdd("", "")
 	})
 
 	//ParamsGrid
@@ -89,9 +89,16 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	m.ParamsGrid.SetBorderStyle(types.BsNone)
 	m.ParamsGrid.SetFlat(true)
 	m.ParamsGrid.SetOptions(m.ParamsGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs))
+	m.ParamsGrid.SetOnSetEditText(func(sender lcl.IObject, aCol, aRow int32, value string) {
+		if aCol == 1 || aCol == 2 {
+			if aRow == m.ParamsGridRow-1 && value != "" {
+				m.QueryParamsGridAdd("", "")
+			}
+		}
+	})
 	m.ParamsGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
 		if aCol == 3 {
-			if m.ParamsGridRow > 1 {
+			if m.ParamsGridRow > 2 {
 				m.ParamsGrid.DeleteRow(aRow)
 				m.ParamsGridRow--
 			}
@@ -99,7 +106,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	})
 	m.RequestQueryParamsGridHead() //请求拦截参数表格头
 	m.ParamsGrid.SetRow(m.ParamsGridRow)
-	m.RequestQueryParamsGridAdd("", "") //默认添加一条
+	m.QueryParamsGridAdd("", "") //默认添加一条
 	//--- end --- Request Query Params
 
 	//--- begin --- Request Headers
@@ -127,9 +134,16 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	m.HeadersGrid.SetBorderStyle(types.BsNone)
 	m.HeadersGrid.SetFlat(true)
 	m.HeadersGrid.SetOptions(m.HeadersGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs))
+	m.HeadersGrid.SetOnSetEditText(func(sender lcl.IObject, aCol, aRow int32, value string) {
+		if aCol == 1 || aCol == 2 {
+			if aRow == m.HeadersGridRow-1 && value != "" {
+				m.HeaderGridAdd("", "")
+			}
+		}
+	})
 	m.HeadersGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
 		if aCol == 3 {
-			if m.HeadersGridRow > 1 {
+			if m.HeadersGridRow > 2 {
 				m.HeadersGrid.DeleteRow(aRow)
 				m.HeadersGridRow--
 			}
@@ -224,7 +238,7 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 		}
 		if aCol == 0 { //列 类型
 			if value == "Text" {
-				m.FormDataGrid.SetCells(3, aRow, "--")
+				m.FormDataGrid.SetCells(3, aRow, "---")
 				row.FileValue = ""
 			} else if value == "File" {
 				if row.FileValue == "" {
@@ -254,7 +268,7 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 	m.FormDataGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
 		//按钮触发
 		if aCol == 4 { //删除行
-			if m.FormDataGridRow > 1 {
+			if m.FormDataGridRow > 2 {
 				m.FormDataGrid.DeleteRow(aRow)
 				if _, ok := m.FormDataGridList[aRow]; ok {
 					delete(m.FormDataGridList, aRow)
@@ -393,7 +407,7 @@ func (m *ProxyInterceptRequestPanel) HeaderGridHead() {
 }
 
 //请求拦截参数列表添加
-func (m *ProxyInterceptRequestPanel) RequestQueryParamsGridAdd(key, value string) {
+func (m *ProxyInterceptRequestPanel) QueryParamsGridAdd(key, value string) {
 	lcl.ThreadSync(func() {
 		m.ParamsGrid.InsertColRow(false, m.ParamsGridRow)
 		m.ParamsGrid.SetCells(0, m.ParamsGridRow, "1")

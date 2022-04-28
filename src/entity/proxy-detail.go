@@ -40,7 +40,7 @@ func (m *ProxyDetail) GetState() (string, types.TColor) {
 	} else if m.State == consts.P1 {
 		return "初始失败", colors.ClRed
 	} else if m.State == consts.P2 {
-		return "发送请求", colors.ClGreenyellow
+		return "发送请求", colors.ClLawngreen
 	} else if m.State == consts.P3 {
 		return "发送失败", colors.ClRed
 	} else if m.State == consts.P4 {
