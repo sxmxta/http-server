@@ -82,12 +82,12 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.TargetEdit.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.TargetEdit.SetEnabled(enable)
 
-	//详情查看
+	//详情查看 memo 展示格式化json串
 	resetPVars()
-	pLeft = 10
+	pLeft = 0
 	pTop = m.TargetEdit.Top() + m.TargetEdit.Height() + 10
-	pWidth = m.TPanel.Width() - 20
-	pHeight = m.TPanel.Height() - pTop - 30
+	pWidth = m.TPanel.Width()
+	pHeight = m.TPanel.Height() - pTop
 	m.DetailViewMemo = lcl.NewMemo(m.TPanel)
 	m.DetailViewMemo.SetParent(m.TPanel)
 	m.DetailViewMemo.SetScrollBars(types.SsAutoBoth)

@@ -9,9 +9,10 @@ import (
 var GUIForm = &TGUIForm{}
 
 var (
+	logsLength   int
 	uiWidth      int32 = 600
 	uiHeight     int32 = 350
-	uiWidthEx    int32 = 400
+	uiWidthEx    int32 = 650
 	uiHeightEx   int32 = 400
 	stateBarText       = "https://gitee.com/snxamdf/http-server"
 )

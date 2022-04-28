@@ -5,7 +5,6 @@ import (
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/messages"
 	"gitee.com/snxamdf/http-server/src/entity"
-	"math"
 	"strings"
 	"time"
 )
@@ -38,6 +37,8 @@ func (m *TGUIForm) impl() {
 	m.showProxyLogChkBox = lcl.NewCheckBox(m)
 	m.showProxyLogChkBox.SetParent(m)
 	m.showProxyLogChkBox.SetCaption("显示代理请求日志")
+	m.showProxyLogChkBox.SetHint("注意：启用该功能稍微影响服务性能")
+	m.showProxyLogChkBox.SetShowHint(true)
 	m.showProxyLogChkBox.SetBounds(10, 0, 0, 0)
 	m.showProxyLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	m.showProxyLogChkBox.SetOnClick(func(sender lcl.IObject) {
@@ -51,6 +52,8 @@ func (m *TGUIForm) impl() {
 	m.showStaticLogChkBox = lcl.NewCheckBox(m)
 	m.showStaticLogChkBox.SetParent(m)
 	m.showStaticLogChkBox.SetCaption("显示普通请求日志")
+	m.showStaticLogChkBox.SetHint("注意：启用该功能稍微影响服务性能")
+	m.showStaticLogChkBox.SetShowHint(true)
 	m.showStaticLogChkBox.SetBounds(m.showProxyLogChkBox.Left()+130, 0, 0, 0)
 	m.showStaticLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	m.showStaticLogChkBox.SetOnClick(func(sender lcl.IObject) {
@@ -63,20 +66,17 @@ func (m *TGUIForm) impl() {
 	//---- begin 启用代理详情 checkbox ----
 	m.enableProxyDetailChkBox = lcl.NewCheckBox(m)
 	m.enableProxyDetailChkBox.SetParent(m)
-	m.enableProxyDetailChkBox.SetCaption("启用代理详情")
+	m.enableProxyDetailChkBox.SetCaption("启用代理跟踪详情")
+	m.enableProxyDetailChkBox.SetHint("注意：启用该功能严重影响服务性能")
+	m.enableProxyDetailChkBox.SetShowHint(true)
 	m.enableProxyDetailChkBox.SetBounds(m.showStaticLogChkBox.Left()+130, 0, 0, 0)
 	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	//代理详情checkBox
 	m.enableProxyDetailChkBox.SetOnClick(func(sender lcl.IObject) {
 		entity.EnableProxyDetail = m.enableProxyDetailChkBox.Checked()
-		if m.ProxyDetailUI == nil {
-			m.proxyDetailPanelInit()
-		}
-		m.proxyLogsGrid.SetVisible(entity.EnableProxyDetail)
-		m.ProxyDetailUI.TPanel.SetVisible(entity.EnableProxyDetail)
 		if entity.EnableProxyDetail {
 			m.SetHeight(m.Height() + uiHeightEx)
-			m.SetWidth(m.Width() + uiWidth)
+			m.SetWidth(m.Width() + uiWidthEx)
 			m.SetBorderStyle(types.BsSizeable)
 		} else {
 			if m.WindowState() == types.WsMaximized {
@@ -86,6 +86,11 @@ func (m *TGUIForm) impl() {
 			m.SetWidth(uiWidth)
 			m.SetBorderStyle(types.BsSingle)
 		}
+		if m.ProxyDetailUI == nil {
+			m.proxyDetailPanelInit()
+		}
+		m.proxyLogsGrid.SetVisible(entity.EnableProxyDetail)
+		m.ProxyDetailUI.TPanel.SetVisible(entity.EnableProxyDetail)
 	})
 	//---- end 启用代理详情 checkbox ----
 
@@ -140,10 +145,8 @@ func (m *TGUIForm) impl() {
 	//---- end gui 窗口变化 ----
 }
 
-var b = true
-
 func (m *TGUIForm) showHIde() {
-	b = !b
+	var b = !m.Visible()
 	if b {
 		m.SetWindowState(types.WsNormal)
 		m.Show()
@@ -152,22 +155,16 @@ func (m *TGUIForm) showHIde() {
 	}
 }
 
-var logsLength int
-
 func LogsColor(color int32, message string) {
 	lcl.ThreadSync(func() {
 		if color >= 0 {
-			GUIForm.logs.SetSelStart(int32(logsLength))
+			GUIForm.logs.SetSelStart(GUIForm.logs.GetTextLen())
 			GUIForm.logs.SetSelLength(int32(strings.Count(message, "")))
 			GUIForm.logs.SelAttributes().SetColor(types.TColor(uint32(color)))
 		}
 		GUIForm.logs.Lines().Add(message)
 		GUIForm.logs.Perform(messages.EM_SCROLLCARET, 7, 0)
 	})
-	logsLength += strings.Count(message, "")
-	if logsLength >= math.MaxInt32 || logsLength < 0 {
-		logsLength = 0
-	}
 }
 
 func Logs(message ...string) {

@@ -3,6 +3,7 @@ package gui
 import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
+	"gitee.com/snxamdf/http-server/src/entity"
 )
 
 //详情使用的基础变量
@@ -36,7 +37,7 @@ type ProxyDetailPanel struct {
 func (m *ProxyDetailPanel) init() {
 	m.RequestDetailViewPanel = &RequestDetailViewPanel{}
 	m.ProxyInterceptConfigPanel = &ProxyInterceptPanel{
-		ProxyInterceptRequestPanel:  &ProxyInterceptRequestPanel{ParamsRow: 1, HeadersRow: 1},
+		ProxyInterceptRequestPanel:  &ProxyInterceptRequestPanel{ParamsGridRow: 1, HeadersGridRow: 1, TBodyPanel: &ProxyInterceptRequestBodyPanel{FormDataGridRow: 1, FormDataGridList: map[int32]*entity.FormDataGridList{}}},
 		ProxyInterceptResponsePanel: &ProxyInterceptResponsePanel{},
 		ProxyInterceptSettingPanel:  &ProxyInterceptSettingPanel{},
 	}
@@ -46,7 +47,8 @@ func (m *TGUIForm) proxyDetailPanelInit() {
 	m.ProxyDetailUI = &ProxyDetailPanel{}
 	m.ProxyDetailUI.TPanel = lcl.NewPanel(m)
 	m.ProxyDetailUI.TPanel.SetParent(m)
-	m.ProxyDetailUI.TPanel.SetBounds(uiWidth, 0, uiWidth, uiHeight+uiHeightEx)
+	m.ProxyDetailUI.TPanel.SetBounds(uiWidth, 0, uiWidthEx, uiHeight+uiHeightEx)
+	m.ProxyDetailUI.TPanel.SetBevelOuter(types.BvNone)
 	m.ProxyDetailUI.TPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
 
 	//初始化子组件对象
@@ -71,13 +73,11 @@ func (m *TGUIForm) proxyDetailPanelInit() {
 func (m *ProxyDetailPanel) proxyPages(left, top, width, height int32) {
 	pagePanel := lcl.NewPanel(m.TPanel) //创建一个tabs的父组件，可以根据客户端变更大小
 	pagePanel.SetParent(m.TPanel)
-	pagePanel.SetBounds(left, top, width, height)
-	pagePanel.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	pagePanel.SetAlign(types.AlClient)
 	pagePanel.SetBevelOuter(types.BvNone) //去除panel边框
 
 	pageControl := lcl.NewPageControl(pagePanel) //Tabs 的控制标签
 	pageControl.SetParent(pagePanel)
-	pageControl.SetBounds(left, top, width, height)
 	pageControl.SetAlign(types.AlClient)
 
 	sheet := lcl.NewTabSheet(pagePanel) //标签页
@@ -86,14 +86,14 @@ func (m *ProxyDetailPanel) proxyPages(left, top, width, height int32) {
 	sheet.SetAlign(types.AlClient)
 	m.RequestDetailViewPanel.TPanel = lcl.NewPanel(pagePanel) //ProxyInterceptRequestPanel 标签页
 	m.RequestDetailViewPanel.TPanel.SetParent(sheet)
-	m.RequestDetailViewPanel.TPanel.SetBounds(0, 0, width, height)
-	m.RequestDetailViewPanel.TPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	m.RequestDetailViewPanel.TPanel.SetAlign(types.AlClient)
+	m.RequestDetailViewPanel.TPanel.SetBevelOuter(types.BvNone) //去除panel边框
 
 	sheet = lcl.NewTabSheet(pagePanel) //标签页
 	sheet.SetPageControl(pageControl)
 	sheet.SetCaption("　代理拦截　")
 	m.ProxyInterceptConfigPanel.TPanel = lcl.NewPanel(pagePanel) //responsePanel 标签页
 	m.ProxyInterceptConfigPanel.TPanel.SetParent(sheet)
-	m.ProxyInterceptConfigPanel.TPanel.SetBounds(0, 0, width, height)
-	m.ProxyInterceptConfigPanel.TPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	m.ProxyInterceptConfigPanel.TPanel.SetAlign(types.AlClient)
+	m.ProxyInterceptConfigPanel.TPanel.SetBevelOuter(types.BvNone) //去除panel边框
 }

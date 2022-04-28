@@ -83,3 +83,41 @@ func PathConcat(paths ...string) string {
 	}
 	return p.String()
 }
+
+//防抖
+type debounce struct {
+	value   bool
+	delay   time.Duration
+	timeout *timeout
+}
+
+type timeout struct {
+	b     bool
+	fn    func()
+	delay time.Duration
+}
+
+//delay 毫秒
+func NewDebounce(delay time.Duration) *debounce {
+	var d = &debounce{delay: delay * time.Millisecond}
+	return d
+}
+
+func (m *debounce) Start(fn func()) {
+	if m.timeout != nil {
+		m.timeout.b = true
+		m.timeout = nil
+	}
+	m.timeout = &timeout{fn: fn, delay: m.delay}
+	m.timeout.run()
+}
+
+func (m *timeout) run() {
+	go func() {
+		time.Sleep(m.delay)
+		if m.b {
+			return
+		}
+		m.fn()
+	}()
+}
