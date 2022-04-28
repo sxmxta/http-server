@@ -30,7 +30,7 @@ func (m *TGUIForm) proxyGrid() {
 	m.proxyLogsGrid.SetFixedCols(0)
 	//m.proxyLogsGrid.SetFixedRows(0)
 	// 设置一些选项
-	m.proxyLogsGrid.SetOptions(m.proxyLogsGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs))
+	m.proxyLogsGrid.SetOptions(m.proxyLogsGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs, types.GoRowHighlight))
 	// 设置不可操作列的背景颜色
 	m.proxyLogsGrid.SetFixedColor(colors.ClGreen)
 	//var topRow int32 = 1
@@ -52,16 +52,18 @@ func (m *TGUIForm) proxyGrid() {
 		logGridSelRowIndex = m.proxyLogsGrid.RowCount() - aRow
 		m.selectGridUpdate()
 	})
-	m.proxyLogsGrid.SetOnDblClick(func(sender lcl.IObject) {
+	m.proxyLogsGrid.SetOnClick(func(sender lcl.IObject) {
 		m.selectGridUpdate()
 	})
+	//m.proxyLogsGrid.SetOnDblClick(func(sender lcl.IObject) {
+	//	m.selectGridUpdate()
+	//})
 
 	//m.proxyLogsGrid.SetOnSetEditText(m.onGridSetEditText)
 	//选中列表某行列数据
 	m.proxyLogsGrid.SetOnSelectCell(func(sender lcl.IObject, aCol, aRow int32, canSelect *bool) {
 		logGridSelRowIndex = m.proxyLogsGrid.RowCount() - aRow
 		if aCol == 1 {
-			//fmt.Println("row:", aRow, *canSelect, m.proxyLogsGrid.RowCount()-aRow)
 			//放到剪切版
 			logGridSelCol2Value = m.proxyLogsGrid.Cells(aCol, logGridSelRowIndex)
 		}
@@ -103,6 +105,9 @@ func (m *TGUIForm) proxyGrid() {
 
 	//添加到右键菜单
 	m.proxyLogsGrid.SetPopupMenu(pm)
+
+	m.proxyLogsGrid.SetOnDrawCell(func(sender lcl.IObject, aCol, aRow int32, aRect types.TRect, state types.TGridDrawState) {
+	})
 }
 
 func (m *TGUIForm) selectGridUpdate() {
@@ -126,10 +131,16 @@ func (m *TGUIForm) proxyLogsGridHead() {
 	//col1.SetReadOnly(true)
 
 	var colAddr = m.proxyLogsGrid.Columns().Add()
-	colAddr.SetWidth(uiWidth - 180)
+	colAddr.SetWidth(uiWidth - 240)
 	colAddr.Title().SetCaption("地址 - (右键菜单复制)")
 	colAddr.Title().SetAlignment(types.TaCenter)
 	colAddr.SetReadOnly(true)
+
+	var colState = m.proxyLogsGrid.Columns().Add()
+	colState.SetWidth(60)
+	colState.Title().SetCaption("状态")
+	colState.Title().SetAlignment(types.TaCenter)
+	colState.SetReadOnly(true)
 
 	var colDetailBtn = m.proxyLogsGrid.Columns().Add()
 	colDetailBtn.SetWidth(60)
@@ -148,12 +159,15 @@ var (
 //代理日志grid添加一行
 func (m *TGUIForm) proxyLogsGridAdd(proxyDetail *entity.ProxyDetail) {
 	lcl.ThreadSync(func() {
+		proxyDetail.Row = m.proxyLogsGridRow
 		//在指定行插入行
 		m.proxyLogsGrid.InsertColRow(false, logGridInsertRow)
 		//给指定行的列设置值
 		m.proxyLogsGrid.SetCells(0, logGridInsertRow, fmt.Sprintf("%v", proxyDetail.ID))
 		m.proxyLogsGrid.SetCells(1, logGridInsertRow, proxyDetail.Method+" - "+proxyDetail.TargetUrl)
-		m.proxyLogsGrid.SetCells(2, logGridInsertRow, "查看")
+		text, _ := proxyDetail.GetState()
+		m.proxyLogsGrid.SetCells(2, logGridInsertRow, text)
+		m.proxyLogsGrid.SetCells(3, logGridInsertRow, "查看")
 		//计算增加一行
 		atomic.AddInt32(&m.proxyLogsGridRow, 1)
 		var r = atomic.LoadInt32(&m.proxyLogsGridRow)
@@ -183,8 +197,11 @@ func (m *TGUIForm) setProxyDetail(proxyDetail *entity.ProxyDetail) {
 	if _, ok := m.ProxyDetails[proxyDetail.ID]; !ok {
 		//代理日志grid添加一行
 		m.proxyLogsGridAdd(proxyDetail)
+	} else {
+		text, _ := proxyDetail.GetState()
+		m.proxyLogsGrid.SetCells(2, m.proxyLogsGridRow-proxyDetail.Row, text)
 	}
 	//更新集合内容
 	m.ProxyDetails[proxyDetail.ID] = proxyDetail
-	m.selectGridUpdate()
+	m.selectGridUpdate() //更新右侧选中数据
 }

@@ -139,25 +139,9 @@ func (m *RequestDetailViewPanel) initUI() {
 
 //更新流程状态label标签显示
 func (m *RequestDetailViewPanel) updateFlowState(proxyDetail *entity.ProxyDetail) {
-	if proxyDetail.State == consts.P0 {
-		m.FlowStateLabel.SetCaption("发送代理请求")
-		m.FlowStateLabel.Font().SetColor(colors.ClBlack)
-	} else if proxyDetail.State == consts.P1 {
-		m.FlowStateLabel.SetCaption("初始代理失败")
-		m.FlowStateLabel.Font().SetColor(colors.ClRed)
-	} else if proxyDetail.State == consts.P2 {
-		m.FlowStateLabel.SetCaption("代理请求失败")
-		m.FlowStateLabel.Font().SetColor(colors.ClRed)
-	} else if proxyDetail.State == consts.P3 {
-		m.FlowStateLabel.SetCaption("代理成功")
-		m.FlowStateLabel.Font().SetColor(colors.ClGreen)
-	} else if proxyDetail.State == consts.P4 {
-		m.FlowStateLabel.SetCaption("响应客户端失败")
-		m.FlowStateLabel.Font().SetColor(colors.ClRed)
-	} else {
-		m.FlowStateLabel.SetCaption(" - - ")
-		m.FlowStateLabel.Font().SetColor(colors.ClGray)
-	}
+	text, color := proxyDetail.GetState()
+	m.FlowStateLabel.SetCaption(text)
+	m.FlowStateLabel.Font().SetColor(color)
 }
 
 //更新请求标签UI

@@ -24,7 +24,6 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			entity.PutLogsProxyTime("Http proxy 致命错误")
 		}
 	}()
-	//fmt.Println("url: ", r.URL)
 	//查看url各个信息
 	//fmt.Print(r.Host, " ", r.Method, " \nr.URL.String ", r.URL.String(), " r.URL.Host ", r.URL.Host, " r.URL.Fragment ", r.URL.Fragment, " r.URL.Hostname ", r.URL.Hostname(), " r.URL.RequestURI ", r.URL.RequestURI(), " r.URL.Scheme ", r.URL.Scheme)
 	var (
@@ -66,36 +65,37 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	} else {
 		request, err = http.NewRequest(r.Method, proxyAddr.targetUrl, r.Body)
 	}
-	//启用代理详情 记录 详情 请求
-	if proxyDetail != nil {
-		if err != nil {
+	if err != nil {
+		//启用代理详情 记录 详情 请求
+		if proxyDetail != nil {
 			proxyDetail.Error = err
 			proxyDetail.State = consts.P1
+			entity.ProxyDetailChan <- proxyDetail
 		}
-		entity.ProxyDetailChan <- proxyDetail
-	}
-	if err != nil {
 		entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
 		return
 	}
 
 	//头设置
-	//fmt.Println("proxy.request.Host",request.Host,"  r.Host",r.Host)
 	//request.Host = r.Host
 	for k, v := range r.Header {
 		for _, vs := range v {
 			request.Header.Add(k, vs)
 		}
 	}
-	//fmt.Println("proxy.request.Host",request.Host,"  r.Host",r.Host)
 	//发起代理请求
+	//启用代理详情 记录 详情 请求
+	if proxyDetail != nil {
+		proxyDetail.State = consts.P2
+		entity.ProxyDetailChan <- proxyDetail
+	}
 	response, err = cli.Do(request)
 	if err != nil {
 		entity.PutLogsProxyTime(err.Error())
 		//启用代理详情 记录 详情 请求
 		if proxyDetail != nil {
 			proxyDetail.Error = err
-			proxyDetail.State = consts.P2
+			proxyDetail.State = consts.P3
 			entity.ProxyDetailChan <- proxyDetail
 		}
 		buf := new(bytes.Buffer)
@@ -119,7 +119,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 				proxyDetail.Response.Body = buf.String()
 				proxyDetail.Response.Header = response.Header
 				proxyDetail.Response.Size = wi
-				proxyDetail.State = consts.P3
+				proxyDetail.State = consts.P4
 				entity.ProxyDetailChan <- proxyDetail
 				_, err = w.Write(buf.Bytes())
 			}
@@ -130,7 +130,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			//启用代理详情 记录 详情 请求
 			if proxyDetail != nil {
 				proxyDetail.Error = err
-				proxyDetail.State = consts.P4
+				proxyDetail.State = consts.P5
 				entity.ProxyDetailChan <- proxyDetail
 			}
 			entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"os"
 	"strings"
@@ -12,7 +11,6 @@ import (
 )
 
 func PathExists(path string) bool {
-	fmt.Println(path)
 	_, err := os.Stat(path)
 	if err == nil {
 		return true

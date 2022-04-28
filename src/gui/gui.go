@@ -50,7 +50,6 @@ func (m *TGUIForm) dataListen() {
 	for {
 		select {
 		case proxyDetail := <-entity.ProxyDetailChan:
-			//fmt.Printf("%+v\n", proxyDetail)
 			m.setProxyDetail(proxyDetail)
 		}
 	}

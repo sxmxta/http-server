@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
@@ -253,7 +252,6 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 		}
 	})
 	m.FormDataGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
-		fmt.Println("SetOnButtonClick", aRow)
 		//按钮触发
 		if aCol == 4 { //删除行
 			if m.FormDataGridRow > 1 {
@@ -307,7 +305,7 @@ func (m *ProxyInterceptRequestBodyPanel) FormDataGridAdd(key, value string) {
 		m.FormDataGrid.SetCells(0, m.FormDataGridRow, "Text")
 		m.FormDataGrid.SetCells(1, m.FormDataGridRow, key)
 		m.FormDataGrid.SetCells(2, m.FormDataGridRow, value)
-		m.FormDataGrid.SetCells(3, m.FormDataGridRow, "--")
+		m.FormDataGrid.SetCells(3, m.FormDataGridRow, "---")
 		m.FormDataGrid.SetCells(4, m.FormDataGridRow, "删除")
 		m.FormDataGridRow++
 		m.FormDataGrid.SetRowCount(m.FormDataGridRow)
@@ -350,7 +348,6 @@ func (m *ProxyInterceptRequestBodyPanel) FormDataGridHead() {
 
 //body radio 按钮点击
 func (m *ProxyInterceptRequestBodyPanel) bodyRdoCheckClick(t int) {
-	fmt.Println(t)
 	m.RawPanel.SetVisible(t == 0)
 	m.FormDataGridPanel.SetVisible(t == 1)
 }
