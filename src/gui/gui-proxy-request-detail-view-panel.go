@@ -109,11 +109,11 @@ func (m *RequestDetailViewPanel) initUI() {
 	pageControl.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
 	var requestSheet = lcl.NewTabSheet(pageControl) //标签页
 	requestSheet.SetPageControl(pageControl)
-	requestSheet.SetCaption("　Request　")
+	requestSheet.SetCaption("　Request View JSON　")
 	requestSheet.SetAlign(types.AlClient)
 	var responseSheet = lcl.NewTabSheet(pageControl) //标签页
 	responseSheet.SetPageControl(pageControl)
-	responseSheet.SetCaption("　Response　")
+	responseSheet.SetCaption("　Response View JSON　")
 	responseSheet.SetAlign(types.AlClient)
 	//request memo
 	pLeft = 0

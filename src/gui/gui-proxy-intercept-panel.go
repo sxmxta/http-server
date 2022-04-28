@@ -176,7 +176,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	pTop = 5
 	var rdoRaw = lcl.NewRadioButton(m.TBodyPanel.TPanel)
 	rdoRaw.SetParent(m.TBodyPanel.TPanel)
-	rdoRaw.SetCaption("raw json")
+	rdoRaw.SetCaption("raw/json")
 	rdoRaw.SetLeft(pLeft)
 	rdoRaw.SetTop(pTop)
 	rdoRaw.SetOnClick(func(sender lcl.IObject) {
@@ -184,7 +184,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	})
 	var rdoFormData = lcl.NewRadioButton(m.TBodyPanel.TPanel)
 	rdoFormData.SetParent(m.TBodyPanel.TPanel)
-	rdoFormData.SetCaption("form-data x-www-form-urlencoded binary")
+	rdoFormData.SetCaption("form-data/x-www-form-urlencoded/binary")
 	rdoFormData.SetLeft(rdoRaw.Left() + 120)
 	rdoFormData.SetTop(pTop)
 	rdoFormData.SetOnClick(func(sender lcl.IObject) {
@@ -228,7 +228,7 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 	m.FormDataGrid.SetFixedColor(colors.ClGreen)
 	m.FormDataGrid.SetBorderStyle(types.BsNone)
 	m.FormDataGrid.SetFlat(true)
-	m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Include(types.GoAlwaysShowEditor, types.GoEditing))
+	m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs, types.GoRowHighlight))
 	m.FormDataGrid.SetAlign(types.AlClient)
 	m.FormDataGrid.SetOnSetEditText(func(sender lcl.IObject, aCol, aRow int32, value string) {
 		row, ok := m.FormDataGridList[aRow]
@@ -237,21 +237,29 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 			m.FormDataGridList[aRow] = row
 		}
 		if aCol == 0 { //列 类型
-			if value == "Text" {
-				m.FormDataGrid.SetCells(3, aRow, "---")
-				row.FileValue = ""
-			} else if value == "File" {
-				if row.FileValue == "" {
-					m.FormDataGrid.SetCells(3, aRow, "选择文件")
-				} else {
-					_, fileName := filepath.Split(row.FileValue)
-					m.FormDataGrid.SetCells(3, aRow, fileName)
-				}
-			} else if value != "Text" && value != "File" {
-				value = "Text"
-				m.FormDataGrid.SetCells(0, aRow, value)
-			}
-			row.Type = value
+			m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Exclude(types.GoEditing))
+			//解决同步到列表问题
+			common.NewDebounce(10).Start(func() { //是个线程操作
+				lcl.ThreadSync(func() { //需要主线程同步
+					if value == "Text" {
+						m.FormDataGrid.SetCells(3, aRow, "---")
+						row.FileValue = ""
+					} else if value == "File" {
+						if row.FileValue == "" {
+							m.FormDataGrid.SetCells(3, aRow, "选择文件")
+						} else {
+							_, fileName := filepath.Split(row.FileValue)
+							m.FormDataGrid.SetCells(3, aRow, fileName)
+						}
+					} else if value != "Text" && value != "File" {
+						value = "Text"
+						m.FormDataGrid.SetCells(0, aRow, value)
+					}
+					row.Type = value
+				})
+			})
+			m.FormDataGrid.CanFocus()
+			m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Include(types.GoEditing))
 		} else if aCol == 1 {
 			row.Key = value
 		} else if aCol == 2 {
