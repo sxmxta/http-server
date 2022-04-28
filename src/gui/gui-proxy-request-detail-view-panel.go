@@ -24,25 +24,25 @@ type RequestDetailViewPanel struct {
 func (m *RequestDetailViewPanel) initUI() {
 	var enable = true
 	//请求源地址
-	resetVars()
+	resetPVars()
 	//ID
 	m.IdEdit = lcl.NewLabeledEdit(m.TPanel)
 	m.IdEdit.SetParent(m.TPanel)
 	m.IdEdit.SetLabelPosition(types.LpLeft)
 	m.IdEdit.EditLabel().SetCaption("序号")
-	m.IdEdit.SetBounds(left, top, width, height)
+	m.IdEdit.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.IdEdit.SetReadOnly(true)
 	m.IdEdit.SetEnabled(false)
 
 	//请求方法comboBox
-	left = m.IdEdit.Left() + m.IdEdit.Width() + bLeft
+	pLeft = m.IdEdit.Left() + m.IdEdit.Width() + bPLeft
 	label := lcl.NewLabel(m.TPanel)
 	label.SetParent(m.TPanel)
 	label.SetCaption("请求方法")
-	label.SetBounds(left-50, top+5, width, height)
+	label.SetBounds(pLeft-50, pTop+5, pWidth, pHeight)
 	m.MethodComboBox = lcl.NewComboBox(m.TPanel)
 	m.MethodComboBox.SetParent(m.TPanel)
-	m.MethodComboBox.SetBounds(left, top, width, height)
+	m.MethodComboBox.SetBounds(pLeft, pTop, pWidth, pHeight)
 	for _, method := range consts.HttpMethods {
 		m.MethodComboBox.Items().Add(method)
 	}
@@ -53,45 +53,45 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.MethodComboBox.SetEnabled(enable)
 
 	//请求Host
-	left = m.MethodComboBox.Left() + m.MethodComboBox.Width() + bLeft
-	width = width * 2
+	pLeft = m.MethodComboBox.Left() + m.MethodComboBox.Width() + bPLeft
+	pWidth = pWidth * 2
 	m.HostEdit = lcl.NewLabeledEdit(m.TPanel)
 	m.HostEdit.SetParent(m.TPanel)
 	m.HostEdit.SetLabelPosition(types.LpLeft)
 	m.HostEdit.EditLabel().SetCaption("HOST")
-	m.HostEdit.SetBounds(left, top, width, height)
+	m.HostEdit.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.HostEdit.SetEnabled(enable)
 
 	//请求源地址
-	resetVars()
-	top = top + height + 10
-	width = width * 6
+	resetPVars()
+	pTop = pTop + pHeight + 10
+	pWidth = pWidth * 6
 	m.SourceEdit = lcl.NewLabeledEdit(m.TPanel)
 	m.SourceEdit.SetParent(m.TPanel)
 	m.SourceEdit.SetLabelPosition(types.LpLeft)
 	m.SourceEdit.EditLabel().SetCaption("源地址")
-	m.SourceEdit.SetBounds(left, top, width, height)
+	m.SourceEdit.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.SourceEdit.SetEnabled(enable)
 
 	//请求代理目标地址
-	top = m.SourceEdit.Top() + height + 10
+	pTop = m.SourceEdit.Top() + pHeight + 10
 	m.TargetEdit = lcl.NewLabeledEdit(m.TPanel)
 	m.TargetEdit.SetParent(m.TPanel)
 	m.TargetEdit.SetLabelPosition(types.LpLeft)
 	m.TargetEdit.EditLabel().SetCaption("目标地址")
-	m.TargetEdit.SetBounds(left, top, width, height)
+	m.TargetEdit.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.TargetEdit.SetEnabled(enable)
 
 	//详情查看
-	resetVars()
-	left = 10
-	top = m.TargetEdit.Top() + m.TargetEdit.Height() + 10
-	width = m.TPanel.Width() - 20
-	height = m.TPanel.Height() - top - 30
+	resetPVars()
+	pLeft = 10
+	pTop = m.TargetEdit.Top() + m.TargetEdit.Height() + 10
+	pWidth = m.TPanel.Width() - 20
+	pHeight = m.TPanel.Height() - pTop - 30
 	m.DetailViewMemo = lcl.NewMemo(m.TPanel)
 	m.DetailViewMemo.SetParent(m.TPanel)
 	m.DetailViewMemo.SetScrollBars(types.SsAutoBoth)
-	m.DetailViewMemo.SetBounds(left, top, width, height)
+	m.DetailViewMemo.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.DetailViewMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
 }
 

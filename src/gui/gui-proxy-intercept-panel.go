@@ -38,15 +38,16 @@ type ProxyInterceptSettingPanel struct {
 
 //request
 func (m *ProxyInterceptRequestPanel) initUI() {
-	resetVars()
-	left = 0
-	top = 0
-	width = m.TPanel.Width()
-	height = m.TPanel.Height()
+	resetPVars()
+	pLeft = 0
+	pTop = 0
+	pWidth = m.TPanel.Width()
+	pHeight = m.TPanel.Height()
 
-	reqPageControl := lcl.NewPageControl(m.TPanel) //Tabs 的控制标签
+	//Tabs 的控制标签
+	reqPageControl := lcl.NewPageControl(m.TPanel)
 	reqPageControl.SetParent(m.TPanel)
-	reqPageControl.SetBounds(left, top, width, height)
+	reqPageControl.SetBounds(pLeft, pTop, pWidth, pHeight)
 	reqPageControl.SetAlign(types.AlClient)
 
 	//--- begin --- Request Query Params
@@ -56,7 +57,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	paramsSheet.SetAlign(types.AlClient)
 	paramsPanel := lcl.NewPanel(m.TPanel) // 标签页
 	paramsPanel.SetParent(paramsSheet)
-	paramsPanel.SetBounds(0, 0, width, height)
+	paramsPanel.SetBounds(0, 0, pWidth, pHeight)
 	paramsPanel.SetAlign(types.AlClient)
 	var reqQueryParamAddBtn = lcl.NewButton(m.TPanel)
 	reqQueryParamAddBtn.SetParent(paramsSheet)
@@ -95,7 +96,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	headersSheet.SetAlign(types.AlClient)
 	headersPanel := lcl.NewPanel(m.TPanel) // 标签页
 	headersPanel.SetParent(headersSheet)
-	headersPanel.SetBounds(0, 0, width, height)
+	headersPanel.SetBounds(0, 0, pWidth, pHeight)
 	headersPanel.SetAlign(types.AlClient)
 	var reqHeaderAddBtn = lcl.NewButton(m.TPanel)
 	reqHeaderAddBtn.SetParent(headersSheet)
@@ -133,16 +134,16 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	bodySheet.SetAlign(types.AlClient)
 	m.TBodyPanel = lcl.NewPanel(m.TPanel) // 标签页
 	m.TBodyPanel.SetParent(bodySheet)
-	m.TBodyPanel.SetBounds(0, 0, width, height)
+	m.TBodyPanel.SetBounds(0, 0, pWidth, pHeight)
 	m.TBodyPanel.SetAlign(types.AlClient)
-	resetVars()
-	left = 30
-	top = 5
+	resetPVars()
+	pLeft = 30
+	pTop = 5
 	var rdoRaw = lcl.NewRadioButton(m.TBodyPanel)
 	rdoRaw.SetParent(m.TBodyPanel)
 	rdoRaw.SetCaption("raw")
-	rdoRaw.SetLeft(left)
-	rdoRaw.SetTop(top)
+	rdoRaw.SetLeft(pLeft)
+	rdoRaw.SetTop(pTop)
 	rdoRaw.SetOnClick(func(sender lcl.IObject) {
 		m.bodyRdoCheckClick(0)
 	})
@@ -150,7 +151,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	rdoFormData.SetParent(m.TBodyPanel)
 	rdoFormData.SetCaption("form-data")
 	rdoFormData.SetLeft(rdoRaw.Left() + 60)
-	rdoFormData.SetTop(top)
+	rdoFormData.SetTop(pTop)
 	rdoFormData.SetOnClick(func(sender lcl.IObject) {
 		m.bodyRdoCheckClick(1)
 	})
@@ -158,7 +159,7 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	rdoXWWWUrlEncode.SetParent(m.TBodyPanel)
 	rdoXWWWUrlEncode.SetCaption("x-www-form-urlencoded")
 	rdoXWWWUrlEncode.SetLeft(rdoFormData.Left() + 90)
-	rdoXWWWUrlEncode.SetTop(top)
+	rdoXWWWUrlEncode.SetTop(pTop)
 	rdoXWWWUrlEncode.SetOnClick(func(sender lcl.IObject) {
 		m.bodyRdoCheckClick(2)
 	})
@@ -252,15 +253,15 @@ func (m *ProxyInterceptRequestPanel) RequestQueryParamsGridHead() {
 
 //response
 func (m *ProxyInterceptResponsePanel) initUI() {
-	resetVars()
-	left = 0
-	top = 25
-	width = m.TPanel.Width()
-	height = m.TPanel.Height()
+	resetPVars()
+	pLeft = 0
+	pTop = 25
+	pWidth = m.TPanel.Width()
+	pHeight = m.TPanel.Height()
 
 	reqPageControl := lcl.NewPageControl(m.TPanel) //Tabs 的控制标签
 	reqPageControl.SetParent(m.TPanel)
-	reqPageControl.SetBounds(left, top, width, height)
+	reqPageControl.SetBounds(pLeft, pTop, pWidth, pHeight)
 	reqPageControl.SetAlign(types.AlClient)
 
 	sheet := lcl.NewTabSheet(reqPageControl) //标签页
@@ -269,7 +270,7 @@ func (m *ProxyInterceptResponsePanel) initUI() {
 	sheet.SetAlign(types.AlClient)
 	headersPanel := lcl.NewPanel(m.TPanel) // 标签页
 	headersPanel.SetParent(sheet)
-	headersPanel.SetBounds(0, 0, width, height)
+	headersPanel.SetBounds(0, 0, pWidth, pHeight)
 	headersPanel.SetAlign(types.AlClient)
 
 	sheet = lcl.NewTabSheet(reqPageControl) //标签页
@@ -278,7 +279,7 @@ func (m *ProxyInterceptResponsePanel) initUI() {
 	sheet.SetAlign(types.AlClient)
 	bodyPanel := lcl.NewPanel(m.TPanel) // 标签页
 	bodyPanel.SetParent(sheet)
-	bodyPanel.SetBounds(0, 0, width, height)
+	bodyPanel.SetBounds(0, 0, pWidth, pHeight)
 	bodyPanel.SetAlign(types.AlClient)
 }
 
@@ -289,15 +290,15 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 
 //代理拦截配置Panel
 func (m *ProxyInterceptPanel) initUI() {
-	resetVars()
-	left = 0
-	top = 0
-	width = m.TPanel.Width()
-	height = m.TPanel.Height()
+	resetPVars()
+	pLeft = 0
+	pTop = 0
+	pWidth = m.TPanel.Width()
+	pHeight = m.TPanel.Height()
 
 	reqPageControl := lcl.NewPageControl(m.TPanel) //Tabs 的控制标签
 	reqPageControl.SetParent(m.TPanel)
-	reqPageControl.SetBounds(left, top, width, height)
+	reqPageControl.SetBounds(pLeft, pTop, pWidth, pHeight)
 	reqPageControl.SetAlign(types.AlClient)
 
 	sheetInterReq := lcl.NewTabSheet(reqPageControl) //标签页
@@ -306,7 +307,7 @@ func (m *ProxyInterceptPanel) initUI() {
 	sheetInterReq.SetAlign(types.AlClient)
 	m.ProxyInterceptRequestPanel.TPanel = lcl.NewPanel(m.TPanel) //ProxyInterceptRequestPanel 标签页
 	m.ProxyInterceptRequestPanel.TPanel.SetParent(sheetInterReq)
-	m.ProxyInterceptRequestPanel.TPanel.SetBounds(0, 0, width, height)
+	m.ProxyInterceptRequestPanel.TPanel.SetBounds(0, 0, pWidth, pHeight)
 	m.ProxyInterceptRequestPanel.TPanel.SetAlign(types.AlClient)
 
 	sheetInterRes := lcl.NewTabSheet(reqPageControl) //标签页
@@ -315,7 +316,7 @@ func (m *ProxyInterceptPanel) initUI() {
 	sheetInterRes.SetAlign(types.AlClient)
 	m.ProxyInterceptResponsePanel.TPanel = lcl.NewPanel(m.TPanel) //responsePanel 标签页
 	m.ProxyInterceptResponsePanel.TPanel.SetParent(sheetInterRes)
-	m.ProxyInterceptResponsePanel.TPanel.SetBounds(0, 0, width, height)
+	m.ProxyInterceptResponsePanel.TPanel.SetBounds(0, 0, pWidth, pHeight)
 	m.ProxyInterceptResponsePanel.TPanel.SetAlign(types.AlClient)
 
 	sheetInterSet := lcl.NewTabSheet(reqPageControl) //标签页
@@ -324,7 +325,7 @@ func (m *ProxyInterceptPanel) initUI() {
 	sheetInterSet.SetAlign(types.AlClient)
 	m.ProxyInterceptSettingPanel.TPanel = lcl.NewPanel(m.TPanel) //responsePanel 标签页
 	m.ProxyInterceptSettingPanel.TPanel.SetParent(sheetInterSet)
-	m.ProxyInterceptSettingPanel.TPanel.SetBounds(0, 0, width, height)
+	m.ProxyInterceptSettingPanel.TPanel.SetBounds(0, 0, pWidth, pHeight)
 	m.ProxyInterceptSettingPanel.TPanel.SetAlign(types.AlClient)
 
 	//初始化子组件

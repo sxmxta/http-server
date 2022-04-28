@@ -14,7 +14,7 @@ func (m *TGUIForm) impl() {
 	m.logs = lcl.NewRichEdit(m)
 	m.logs.SetParent(m)
 	m.logs.Font().SetSize(10)
-	m.logs.SetBounds(0, 20, m.width, m.height-20)
+	m.logs.SetBounds(0, 20, uiWidth, uiHeight-20)
 	m.logs.SetScrollBars(types.SsAutoBoth)
 	m.logs.SetReadOnly(true)
 	m.logs.SetOnDblClick(func(sender lcl.IObject) {
@@ -34,6 +34,7 @@ func (m *TGUIForm) impl() {
 	m.stbar.SetSimplePanel(false)
 	m.stbar.Panels().Add().SetText("https://gitee.com/snxamdf/http-server")
 
+	//---- begin 显示代理请求日志 checkbox ----
 	m.showProxyLogChkBox = lcl.NewCheckBox(m)
 	m.showProxyLogChkBox.SetParent(m)
 	m.showProxyLogChkBox.SetCaption("显示代理请求日志")
@@ -44,7 +45,9 @@ func (m *TGUIForm) impl() {
 	})
 	m.showProxyLogChkBox.SetChecked(true)
 	entity.ShowProxyLog = true
+	//---- end 显示代理请求日志 checkbox ----
 
+	//---- begin 启用代理详情 checkbox ----
 	m.enableProxyDetailChkBox = lcl.NewCheckBox(m)
 	m.enableProxyDetailChkBox.SetParent(m)
 	m.enableProxyDetailChkBox.SetCaption("启用代理详情")
@@ -53,25 +56,27 @@ func (m *TGUIForm) impl() {
 	//代理详情checkBox
 	m.enableProxyDetailChkBox.SetOnClick(func(sender lcl.IObject) {
 		entity.EnableProxyDetail = m.enableProxyDetailChkBox.Checked()
-		if entity.EnableProxyDetail {
-			m.SetHeight(m.Height() + 400)
-			m.SetWidth(m.Width() + m.width)
-			m.SetBorderStyle(types.BsSizeable)
-		} else {
-			if m.WindowState() == types.WsMaximized {
-				m.SetWindowState(types.WsNormal)
-			}
-			m.SetHeight(m.height)
-			m.SetWidth(m.width)
-			m.SetBorderStyle(types.BsSingle)
-		}
 		if m.ProxyDetailUI == nil {
 			m.proxyDetailPanelInit()
 		}
 		m.proxyLogsGrid.SetVisible(entity.EnableProxyDetail)
 		m.ProxyDetailUI.TPanel.SetVisible(entity.EnableProxyDetail)
+		if entity.EnableProxyDetail {
+			m.SetHeight(m.Height() + uiHeightEx)
+			m.SetWidth(m.Width() + uiWidth)
+			m.SetBorderStyle(types.BsSizeable)
+		} else {
+			if m.WindowState() == types.WsMaximized {
+				m.SetWindowState(types.WsNormal)
+			}
+			m.SetHeight(uiHeight)
+			m.SetWidth(uiWidth)
+			m.SetBorderStyle(types.BsSingle)
+		}
 	})
+	//---- end 启用代理详情 checkbox ----
 
+	//---- begin 显示普通请求日志 checkbox ----
 	m.showStaticLogChkBox = lcl.NewCheckBox(m)
 	m.showStaticLogChkBox.SetParent(m)
 	m.showStaticLogChkBox.SetCaption("显示普通请求日志")
@@ -82,7 +87,9 @@ func (m *TGUIForm) impl() {
 	})
 	m.showStaticLogChkBox.SetChecked(true)
 	entity.ShowStaticLog = true
+	//---- end 显示普通请求日志 checkbox ----
 
+	//---- begin 任务栏托盘 tray icon ----
 	trayIcon := lcl.NewTrayIcon(m)
 	trayIcon.SetHint(m.Caption())
 	trayIcon.SetVisible(true)
@@ -101,18 +108,7 @@ func (m *TGUIForm) impl() {
 	trayIcon.SetOnClick(func(sender lcl.IObject) {
 		m.showHIde()
 	})
-	m.SetOnResize(func(sender lcl.IObject) {
-		var mh = m.Height()
-		mh = mh - m.height - 20
-		m.proxyLogsGrid.SetHeight(mh)
-	})
-	m.SetOnConstrainedResize(func(sender lcl.IObject, minWidth, minHeight, maxWidth, maxHeight *int32) {
-		//fmt.Println(*minWidth, *minHeight, *maxWidth, *maxHeight)
-		//m.proxyLogsGrid.SetBounds(0, m.height, m.width, 380)
-		var mh = m.Height()
-		mh = mh - m.height - 20
-		m.proxyLogsGrid.SetHeight(mh)
-	})
+	//托盘右键菜单
 	pm := lcl.NewPopupMenu(m)
 	item := lcl.NewMenuItem(m)
 	item.SetCaption("显　示")
@@ -128,6 +124,20 @@ func (m *TGUIForm) impl() {
 	})
 	pm.Items().Add(item)
 	trayIcon.SetPopupMenu(pm)
+	//---- end 任务栏托盘 tray icon ----
+
+	//---- begin gui 窗口变化 ----
+	m.SetOnResize(func(sender lcl.IObject) {
+		var mh = m.Height()
+		mh = mh - uiHeight - 20
+		m.proxyLogsGrid.SetHeight(mh)
+	})
+	m.SetOnConstrainedResize(func(sender lcl.IObject, minWidth, minHeight, maxWidth, maxHeight *int32) {
+		var mh = m.Height()
+		mh = mh - uiHeight - 20
+		m.proxyLogsGrid.SetHeight(mh)
+	})
+	//---- end gui 窗口变化 ----
 }
 
 var b = true

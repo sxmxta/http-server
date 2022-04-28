@@ -8,10 +8,15 @@ import (
 
 var GUIForm = &TGUIForm{}
 
+var (
+	uiWidth    int32 = 600
+	uiHeight   int32 = 350
+	uiWidthEx  int32 = 400
+	uiHeightEx int32 = 400
+)
+
 type TGUIForm struct {
 	*lcl.TForm
-	width                   int32
-	height                  int32
 	logs                    *lcl.TRichEdit
 	proxyLogsGrid           *lcl.TStringGrid              //代理详情列表UI
 	ProxyDetails            map[int32]*entity.ProxyDetail //代理详情数据集合
@@ -23,27 +28,20 @@ type TGUIForm struct {
 }
 
 func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
-	m.init()
+	m.Icon().LoadFromFSFile("resources/app.ico")
 	m.SetCaption("Http Web Server")
 	m.SetPosition(types.PoScreenCenter)
 	//m.EnabledMaximize(false)
 	m.SetBorderStyle(types.BsSingle)
-	m.SetWidth(m.width)
-	m.SetHeight(m.height)
+	m.SetWidth(uiWidth)
+	m.SetHeight(uiHeight)
 	m.ProxyDetails = make(map[int32]*entity.ProxyDetail)
 	m.impl()
-	//数据监听
+	//数据监听 channel
 	go m.dataListen()
 }
 
-func (m *TGUIForm) init() {
-	m.width = 600
-	m.height = 350
-	icon := lcl.NewIcon()
-	icon.LoadFromFSFile("resources/app.ico")
-	m.SetIcon(icon)
-}
-
+//数据监听 channel
 func (m *TGUIForm) dataListen() {
 	for {
 		select {

@@ -5,33 +5,31 @@ import (
 	"gitee.com/snxamdf/golcl/lcl/types"
 )
 
+//详情使用的基础变量
 var (
-	bTop    int32 = 20
-	bLeft   int32 = 70
-	bWidth  int32 = 80
-	bHeight int32 = 25
-	top           = bTop
-	left          = bLeft
-	width         = bWidth
-	height        = bHeight
+	bPTop    int32 = 20
+	bPLeft   int32 = 70
+	bPWidth  int32 = 80
+	bPHeight int32 = 25
+	pTop           = bPTop
+	pLeft          = bPLeft
+	pWidth         = bPWidth
+	pHeight        = bPHeight
 )
 
-func resetVars() {
-	left = bLeft
-	top = bTop
-	height = bHeight
-	width = bWidth
+//重置基础变量
+func resetPVars() {
+	pLeft = bPLeft
+	pTop = bPTop
+	pHeight = bPHeight
+	pWidth = bPWidth
 }
 
+//代理Panel
 type ProxyDetailPanel struct {
 	TPanel                    *lcl.TPanel
-	IdEdit                    *lcl.TLabeledEdit
-	MethodComboBox            *lcl.TComboBox
-	HostEdit                  *lcl.TLabeledEdit
-	SourceEdit                *lcl.TLabeledEdit
-	TargetEdit                *lcl.TLabeledEdit
-	RequestDetailViewPanel    *RequestDetailViewPanel //代理详情查看
-	ProxyInterceptConfigPanel *ProxyInterceptPanel    //代理拦截配置Panel
+	RequestDetailViewPanel    *RequestDetailViewPanel //代理详情查看 Sheet Panel
+	ProxyInterceptConfigPanel *ProxyInterceptPanel    //代理拦截配置 Sheet Panel
 }
 
 //初始化子组件对象
@@ -48,19 +46,19 @@ func (m *TGUIForm) proxyDetailPanelInit() {
 	m.ProxyDetailUI = &ProxyDetailPanel{}
 	m.ProxyDetailUI.TPanel = lcl.NewPanel(m)
 	m.ProxyDetailUI.TPanel.SetParent(m)
-	m.ProxyDetailUI.TPanel.SetBounds(m.width, 0, m.width, m.height+400)
+	m.ProxyDetailUI.TPanel.SetBounds(uiWidth, 0, uiWidth, uiHeight+uiHeightEx)
 	m.ProxyDetailUI.TPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
 
 	//初始化子组件对象
 	m.ProxyDetailUI.init()
 
 	//请求响应tabs标签
-	resetVars()
-	left = 0
-	top = 0
-	width = m.ProxyDetailUI.TPanel.Width()
-	height = m.ProxyDetailUI.TPanel.Height()
-	m.ProxyDetailUI.proxyPages(left, top, width, height)
+	resetPVars()
+	pLeft = 0
+	pTop = 0
+	pWidth = m.ProxyDetailUI.TPanel.Width()
+	pHeight = m.ProxyDetailUI.TPanel.Height()
+	m.ProxyDetailUI.proxyPages(pLeft, pTop, pWidth, pHeight)
 
 	//代理详情查看PanelUI
 	m.ProxyDetailUI.RequestDetailViewPanel.initUI()
@@ -69,7 +67,7 @@ func (m *TGUIForm) proxyDetailPanelInit() {
 
 }
 
-//请求响应Page
+//UI右侧请求响应sheet Page
 func (m *ProxyDetailPanel) proxyPages(left, top, width, height int32) {
 	pagePanel := lcl.NewPanel(m.TPanel) //创建一个tabs的父组件，可以根据客户端变更大小
 	pagePanel.SetParent(m.TPanel)
