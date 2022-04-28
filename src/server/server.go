@@ -163,6 +163,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//if r.Method == "OPTIONS" {
 		//	return
 		//}
+		//自定义的http api go服务代码
 		if fn, ok := routeMapper[path]; ok {
 			w.Header().Set("Content-Type", "application/json")
 			ctx := &Context{w, r, false}
