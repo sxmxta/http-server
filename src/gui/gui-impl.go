@@ -17,8 +17,7 @@ func (m *TGUIForm) impl() {
 	m.logs.SetScrollBars(types.SsAutoBoth)
 	m.logs.SetReadOnly(true)
 	m.logs.SetOnDblClick(func(sender lcl.IObject) {
-		logsLength = 0
-		m.logs.Lines().Clear()
+		clearLogs()
 	})
 	m.logs.SetHint("双击清空")
 	m.logs.SetShowHint(true)
@@ -37,7 +36,7 @@ func (m *TGUIForm) impl() {
 	m.showProxyLogChkBox = lcl.NewCheckBox(m)
 	m.showProxyLogChkBox.SetParent(m)
 	m.showProxyLogChkBox.SetCaption("显示代理请求日志")
-	m.showProxyLogChkBox.SetHint("注意：启用该功能稍微影响服务性能")
+	m.showProxyLogChkBox.SetHint("不影响服务性能")
 	m.showProxyLogChkBox.SetShowHint(true)
 	m.showProxyLogChkBox.SetBounds(10, 0, 0, 0)
 	m.showProxyLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
@@ -52,7 +51,7 @@ func (m *TGUIForm) impl() {
 	m.showStaticLogChkBox = lcl.NewCheckBox(m)
 	m.showStaticLogChkBox.SetParent(m)
 	m.showStaticLogChkBox.SetCaption("显示普通请求日志")
-	m.showStaticLogChkBox.SetHint("注意：启用该功能稍微影响服务性能")
+	m.showStaticLogChkBox.SetHint("不影响服务性能")
 	m.showStaticLogChkBox.SetShowHint(true)
 	m.showStaticLogChkBox.SetBounds(m.showProxyLogChkBox.Left()+130, 0, 0, 0)
 	m.showStaticLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
@@ -67,7 +66,7 @@ func (m *TGUIForm) impl() {
 	m.enableProxyDetailChkBox = lcl.NewCheckBox(m)
 	m.enableProxyDetailChkBox.SetParent(m)
 	m.enableProxyDetailChkBox.SetCaption("启用代理跟踪详情")
-	m.enableProxyDetailChkBox.SetHint("注意：启用该功能严重影响服务性能")
+	m.enableProxyDetailChkBox.SetHint("启用该功能严重影响服务性能\n使用于调式接口")
 	m.enableProxyDetailChkBox.SetShowHint(true)
 	m.enableProxyDetailChkBox.SetBounds(m.showStaticLogChkBox.Left()+130, 0, 0, 0)
 	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
@@ -165,6 +164,15 @@ func LogsColor(color int32, message string) {
 		GUIForm.logs.Lines().Add(message)
 		GUIForm.logs.Perform(messages.EM_SCROLLCARET, 7, 0)
 	})
+	logsLength++
+	if logsLength > 10000 {
+		clearLogs()
+	}
+}
+
+func clearLogs() {
+	logsLength = 0
+	GUIForm.logs.Lines().Clear()
 }
 
 func Logs(message ...string) {

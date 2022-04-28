@@ -33,7 +33,13 @@ func (m *TGUIForm) proxyGrid() {
 	m.proxyLogsGrid.SetOptions(m.proxyLogsGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs))
 	// 设置不可操作列的背景颜色
 	m.proxyLogsGrid.SetFixedColor(colors.ClGreen)
-
+	//var topRow int32 = 1
+	m.proxyLogsGrid.SetOnMouseWheelUp(func(sender lcl.IObject, shift types.TShiftState, mousePos types.TPoint, handled *bool) {
+		m.proxyLogsGrid.SetTopRow(1)
+	})
+	m.proxyLogsGrid.SetOnMouseWheelDown(func(sender lcl.IObject, shift types.TShiftState, mousePos types.TPoint, handled *bool) {
+		m.proxyLogsGrid.SetTopRow(m.proxyLogsGridRow)
+	})
 	// 设置flat后可以用这个修改fixed区域的表格线
 	//m.proxyLogsGrid.SetFixedGridLineColor(colors.ClRed)
 	//m.proxyLogsGrid.SetAnchors(types.NewSet(types.AkBottom, types.AkRight))
@@ -44,10 +50,10 @@ func (m *TGUIForm) proxyGrid() {
 
 	m.proxyLogsGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
 		logGridSelRowIndex = m.proxyLogsGrid.RowCount() - aRow
-		m.gridClick()
+		m.selectGridUpdate()
 	})
 	m.proxyLogsGrid.SetOnDblClick(func(sender lcl.IObject) {
-		m.gridClick()
+		m.selectGridUpdate()
 	})
 
 	//m.proxyLogsGrid.SetOnSetEditText(m.onGridSetEditText)
@@ -61,7 +67,7 @@ func (m *TGUIForm) proxyGrid() {
 		}
 	})
 	//设置初始行数 1
-	m.proxyLogsGrid.SetRowCount(logGridRowCount)
+	m.proxyLogsGrid.SetRowCount(m.proxyLogsGridRow)
 
 	// 列表右键
 	var pm = lcl.NewPopupMenu(m.proxyLogsGrid)
@@ -99,13 +105,13 @@ func (m *TGUIForm) proxyGrid() {
 	m.proxyLogsGrid.SetPopupMenu(pm)
 }
 
-func (m *TGUIForm) gridClick() {
+func (m *TGUIForm) selectGridUpdate() {
 	if rowData, ok := m.ProxyDetails[logGridSelRowIndex]; ok {
 		m.ProxyDetailUI.RequestDetailViewPanel.updateRequestSheet(rowData)
 		m.ProxyDetailUI.RequestDetailViewPanel.updateResponseSheet(rowData)
-		if d, err := json.Marshal(rowData); err == nil {
-			fmt.Println(" row", logGridSelRowIndex, "proxyDetail:", rowData.TargetUrl, " JSON:", string(d))
-		}
+		//if d, err := json.Marshal(rowData); err == nil {
+		//	fmt.Println(" row", logGridSelRowIndex, "proxyDetail:", rowData.TargetUrl, " JSON:", string(d))
+		//}
 	}
 }
 
@@ -136,7 +142,6 @@ func (m *TGUIForm) proxyLogsGridHead() {
 var (
 	logGridSelCol2Value string      //选中表格第二列的值
 	logGridSelRowIndex  int32  = -1 //选中表格行下标
-	logGridRowCount     int32  = 1  //行数
 	logGridInsertRow    int32  = 1  //在第指定行插入
 )
 
@@ -150,8 +155,8 @@ func (m *TGUIForm) proxyLogsGridAdd(proxyDetail *entity.ProxyDetail) {
 		m.proxyLogsGrid.SetCells(1, logGridInsertRow, proxyDetail.Method+" - "+proxyDetail.TargetUrl)
 		m.proxyLogsGrid.SetCells(2, logGridInsertRow, "查看")
 		//计算增加一行
-		atomic.AddInt32(&logGridRowCount, 1)
-		var r = atomic.LoadInt32(&logGridRowCount)
+		atomic.AddInt32(&m.proxyLogsGridRow, 1)
+		var r = atomic.LoadInt32(&m.proxyLogsGridRow)
 		//给表格设置新总行数
 		m.proxyLogsGrid.SetRowCount(r)
 	})
@@ -162,8 +167,8 @@ func (m *TGUIForm) proxyLogsGridClear() {
 	m.proxyLogsGrid.Clear()
 	logGridSelCol2Value = ""
 	logGridSelRowIndex = -1
-	logGridRowCount = 1
-	m.proxyLogsGrid.SetRowCount(logGridRowCount)
+	m.proxyLogsGridRow = 1
+	m.proxyLogsGrid.SetRowCount(m.proxyLogsGridRow)
 	//m.proxyLogsGridHead()
 }
 
@@ -174,9 +179,12 @@ var setProxyDetailLock = sync.RWMutex{}
 func (m *TGUIForm) setProxyDetail(proxyDetail *entity.ProxyDetail) {
 	setProxyDetailLock.Lock()
 	defer setProxyDetailLock.Unlock()
+	//添加到 代理详情数据集合
 	if _, ok := m.ProxyDetails[proxyDetail.ID]; !ok {
 		//代理日志grid添加一行
 		m.proxyLogsGridAdd(proxyDetail)
 	}
+	//更新集合内容
 	m.ProxyDetails[proxyDetail.ID] = proxyDetail
+	m.selectGridUpdate()
 }

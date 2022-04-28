@@ -20,7 +20,8 @@ var (
 type TGUIForm struct {
 	*lcl.TForm
 	logs                    *lcl.TRichEdit
-	proxyLogsGrid           *lcl.TStringGrid              //代理详情列表UI
+	proxyLogsGrid           *lcl.TStringGrid //代理详情列表UI
+	proxyLogsGridRow        int32
 	ProxyDetails            map[int32]*entity.ProxyDetail //代理详情数据集合
 	ProxyDetailUI           *ProxyDetailPanel             //代理PanelUI
 	stateBar                *lcl.TStatusBar
@@ -38,6 +39,7 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.SetWidth(uiWidth)
 	m.SetHeight(uiHeight)
 	m.ProxyDetails = make(map[int32]*entity.ProxyDetail)
+	m.proxyLogsGridRow = 1
 	m.impl()
 	//数据监听 channel
 	go m.dataListen()

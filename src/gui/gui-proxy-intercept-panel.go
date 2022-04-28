@@ -338,7 +338,7 @@ func (m *ProxyInterceptRequestBodyPanel) FormDataGridHead() {
 	colFileValue.Title().SetCaption("Select File")
 	colFileValue.Title().SetAlignment(types.TaCenter)
 	colFileValue.SetButtonStyle(types.CbsButtonColumn)
-	colFileValue.SetAlignment(types.TaCenter)
+	colFileValue.SetAlignment(types.TaRightJustify)
 
 	var delBtn = m.FormDataGrid.Columns().Add()
 	delBtn.SetWidth(60)

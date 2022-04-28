@@ -5,19 +5,22 @@ import (
 	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
+	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/entity"
 )
 
 //代理详情查看Panel
 type RequestDetailViewPanel struct {
-	TPanel         *lcl.TPanel
-	IdEdit         *lcl.TLabeledEdit
-	MethodComboBox *lcl.TComboBox
-	HostEdit       *lcl.TLabeledEdit
-	SourceEdit     *lcl.TLabeledEdit
-	TargetEdit     *lcl.TLabeledEdit
-	DetailViewMemo *lcl.TMemo
+	TPanel                 *lcl.TPanel
+	IdEdit                 *lcl.TLabeledEdit
+	MethodComboBox         *lcl.TComboBox
+	HostEdit               *lcl.TLabeledEdit
+	FlowStateLabel         *lcl.TLabel
+	SourceEdit             *lcl.TLabeledEdit
+	TargetEdit             *lcl.TLabeledEdit
+	RequestDetailViewMemo  *lcl.TMemo
+	ResponseDetailViewMemo *lcl.TMemo
 }
 
 //代理详情查看PanelUI
@@ -39,7 +42,7 @@ func (m *RequestDetailViewPanel) initUI() {
 	label := lcl.NewLabel(m.TPanel)
 	label.SetParent(m.TPanel)
 	label.SetCaption("请求方法")
-	label.SetBounds(pLeft-50, pTop+5, pWidth, pHeight)
+	label.SetBounds(pLeft-52, pTop+5, pWidth, pHeight)
 	m.MethodComboBox = lcl.NewComboBox(m.TPanel)
 	m.MethodComboBox.SetParent(m.TPanel)
 	m.MethodComboBox.SetBounds(pLeft, pTop, pWidth, pHeight)
@@ -53,7 +56,7 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.MethodComboBox.SetEnabled(enable)
 
 	//请求Host
-	pLeft = m.MethodComboBox.Left() + m.MethodComboBox.Width() + bPLeft
+	pLeft = m.MethodComboBox.Left() + m.MethodComboBox.Width() + bPLeft - 20
 	pWidth = pWidth * 2
 	m.HostEdit = lcl.NewLabeledEdit(m.TPanel)
 	m.HostEdit.SetParent(m.TPanel)
@@ -61,6 +64,18 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.HostEdit.EditLabel().SetCaption("HOST")
 	m.HostEdit.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.HostEdit.SetEnabled(enable)
+
+	//流程状态
+	pLeft = m.HostEdit.Left() + m.HostEdit.Width() + 10
+	//pTop = 16
+	m.FlowStateLabel = lcl.NewLabel(m.TPanel)
+	m.FlowStateLabel.SetParent(m.TPanel)
+	m.FlowStateLabel.SetCaption(" - - ")
+	m.FlowStateLabel.SetLeft(pLeft)
+	m.FlowStateLabel.SetTop(pTop)
+	m.FlowStateLabel.Font().SetStyle(types.NewSet(types.FsBold))
+	m.FlowStateLabel.Font().SetSize(12)
+	m.FlowStateLabel.Font().SetColor(colors.ClGray)
 
 	//请求源地址
 	resetPVars()
@@ -88,11 +103,61 @@ func (m *RequestDetailViewPanel) initUI() {
 	pTop = m.TargetEdit.Top() + m.TargetEdit.Height() + 10
 	pWidth = m.TPanel.Width()
 	pHeight = m.TPanel.Height() - pTop
-	m.DetailViewMemo = lcl.NewMemo(m.TPanel)
-	m.DetailViewMemo.SetParent(m.TPanel)
-	m.DetailViewMemo.SetScrollBars(types.SsAutoBoth)
-	m.DetailViewMemo.SetBounds(pLeft, pTop, pWidth, pHeight)
-	m.DetailViewMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	var pageControl = lcl.NewPageControl(m.TPanel)
+	pageControl.SetParent(m.TPanel)
+	pageControl.SetBounds(pLeft, pTop, pWidth, pHeight)
+	pageControl.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	var requestSheet = lcl.NewTabSheet(pageControl) //标签页
+	requestSheet.SetPageControl(pageControl)
+	requestSheet.SetCaption("　Request　")
+	requestSheet.SetAlign(types.AlClient)
+	var responseSheet = lcl.NewTabSheet(pageControl) //标签页
+	responseSheet.SetPageControl(pageControl)
+	responseSheet.SetCaption("　Response　")
+	responseSheet.SetAlign(types.AlClient)
+	//request memo
+	pLeft = 0
+	pTop = 0
+	pWidth = m.TPanel.Width() - 10
+	pHeight = pageControl.Height() - 30
+	m.RequestDetailViewMemo = lcl.NewMemo(requestSheet)
+	m.RequestDetailViewMemo.SetParent(requestSheet)
+	m.RequestDetailViewMemo.SetScrollBars(types.SsAutoBoth)
+	m.RequestDetailViewMemo.SetBounds(pLeft, pTop, pWidth, pHeight)
+	m.RequestDetailViewMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	//response memo
+	pLeft = 0
+	pTop = 0
+	pWidth = m.TPanel.Width() - 10
+	pHeight = pageControl.Height() - 30
+	m.ResponseDetailViewMemo = lcl.NewMemo(responseSheet)
+	m.ResponseDetailViewMemo.SetParent(responseSheet)
+	m.ResponseDetailViewMemo.SetScrollBars(types.SsAutoBoth)
+	m.ResponseDetailViewMemo.SetBounds(pLeft, pTop, pWidth, pHeight)
+	m.ResponseDetailViewMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+}
+
+//更新流程状态label标签显示
+func (m *RequestDetailViewPanel) updateFlowState(proxyDetail *entity.ProxyDetail) {
+	if proxyDetail.State == consts.P0 {
+		m.FlowStateLabel.SetCaption("初始请求")
+		m.FlowStateLabel.Font().SetColor(colors.ClBlack)
+	} else if proxyDetail.State == consts.P1 {
+		m.FlowStateLabel.SetCaption("初始化失败")
+		m.FlowStateLabel.Font().SetColor(colors.ClRed)
+	} else if proxyDetail.State == consts.P2 {
+		m.FlowStateLabel.SetCaption("代理请求失败")
+		m.FlowStateLabel.Font().SetColor(colors.ClRed)
+	} else if proxyDetail.State == consts.P3 {
+		m.FlowStateLabel.SetCaption("代理成功")
+		m.FlowStateLabel.Font().SetColor(colors.ClGreen)
+	} else if proxyDetail.State == consts.P4 {
+		m.FlowStateLabel.SetCaption("响应客户端失败")
+		m.FlowStateLabel.Font().SetColor(colors.ClRed)
+	} else {
+		m.FlowStateLabel.SetCaption(" - - ")
+		m.FlowStateLabel.Font().SetColor(colors.ClGray)
+	}
 }
 
 //更新请求标签UI
@@ -102,12 +167,15 @@ func (m *RequestDetailViewPanel) updateRequestSheet(proxyDetail *entity.ProxyDet
 	m.MethodComboBox.SetItemIndex(int32(consts.GetHttpMethodsIdx(proxyDetail.Method)))
 	m.SourceEdit.SetText(proxyDetail.SourceUrl)
 	m.TargetEdit.SetText(proxyDetail.TargetUrl)
-	if jsn, err := json.MarshalIndent(proxyDetail, "", "\t"); err == nil {
-		m.DetailViewMemo.SetText(string(jsn))
+	m.updateFlowState(proxyDetail)
+	if jsn, err := json.MarshalIndent(proxyDetail.Request, "", "\t"); err == nil {
+		m.RequestDetailViewMemo.SetText(string(jsn))
 	}
 }
 
 //更新响应标签UI
 func (m *RequestDetailViewPanel) updateResponseSheet(proxyDetail *entity.ProxyDetail) {
-
+	if jsn, err := json.MarshalIndent(proxyDetail.Response, "", "\t"); err == nil {
+		m.ResponseDetailViewMemo.SetText(string(jsn))
+	}
 }
