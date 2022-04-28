@@ -159,7 +159,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		//w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		entity.PutMessage("请求URL:", path)
+		entity.PutLogsStaticTime("请求URL:", path)
 		//if r.Method == "OPTIONS" {
 		//	return
 		//}

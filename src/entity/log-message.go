@@ -24,10 +24,14 @@ func PutTimeMessage(message ...string) {
 
 //代理日志
 func PutLogsProxyTime(message ...string) {
-	go func() { GlobalLogMessageChan <- &LogMessage{Type: 3, Message: message} }()
+	if ShowProxyLog {
+		go func() { GlobalLogMessageChan <- &LogMessage{Type: 3, Message: message} }()
+	}
 }
 
 //普通日志
 func PutLogsStaticTime(message ...string) {
-	go func() { GlobalLogMessageChan <- &LogMessage{Type: 4, Message: message} }()
+	if ShowStaticLog {
+		go func() { GlobalLogMessageChan <- &LogMessage{Type: 4, Message: message} }()
+	}
 }
