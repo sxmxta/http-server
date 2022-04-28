@@ -14,7 +14,7 @@ func (m *TGUIForm) impl() {
 	m.logs = lcl.NewRichEdit(m)
 	m.logs.SetParent(m)
 	m.logs.Font().SetSize(10)
-	m.logs.SetBounds(0, 20, uiWidth, uiHeight-20)
+	m.logs.SetBounds(0, 21, uiWidth, uiHeight-21)
 	m.logs.SetScrollBars(types.SsAutoBoth)
 	m.logs.SetReadOnly(true)
 	m.logs.SetOnDblClick(func(sender lcl.IObject) {
@@ -28,11 +28,11 @@ func (m *TGUIForm) impl() {
 	//代理日志列表
 	m.proxyGrid()
 	// 底部状态条
-	m.stbar = lcl.NewStatusBar(m)
-	m.stbar.SetParent(m)
-	//m.stbar.SetAutoHint(true)
-	m.stbar.SetSimplePanel(false)
-	m.stbar.Panels().Add().SetText("https://gitee.com/snxamdf/http-server")
+	m.stateBar = lcl.NewStatusBar(m)
+	m.stateBar.SetParent(m)
+	//m.stateBar.SetAutoHint(true)
+	m.stateBar.SetSimplePanel(false)
+	m.stateBar.Panels().Add().SetText(stateBarText)
 
 	//---- begin 显示代理请求日志 checkbox ----
 	m.showProxyLogChkBox = lcl.NewCheckBox(m)
@@ -47,11 +47,24 @@ func (m *TGUIForm) impl() {
 	entity.ShowProxyLog = true
 	//---- end 显示代理请求日志 checkbox ----
 
+	//---- begin 显示普通请求日志 checkbox ----
+	m.showStaticLogChkBox = lcl.NewCheckBox(m)
+	m.showStaticLogChkBox.SetParent(m)
+	m.showStaticLogChkBox.SetCaption("显示普通请求日志")
+	m.showStaticLogChkBox.SetBounds(m.showProxyLogChkBox.Left()+130, 0, 0, 0)
+	m.showStaticLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
+	m.showStaticLogChkBox.SetOnClick(func(sender lcl.IObject) {
+		entity.ShowStaticLog = m.showStaticLogChkBox.Checked()
+	})
+	m.showStaticLogChkBox.SetChecked(true)
+	entity.ShowStaticLog = true
+	//---- end 显示普通请求日志 checkbox ----
+
 	//---- begin 启用代理详情 checkbox ----
 	m.enableProxyDetailChkBox = lcl.NewCheckBox(m)
 	m.enableProxyDetailChkBox.SetParent(m)
 	m.enableProxyDetailChkBox.SetCaption("启用代理详情")
-	m.enableProxyDetailChkBox.SetBounds(m.showProxyLogChkBox.Left()+130, 0, 0, 0)
+	m.enableProxyDetailChkBox.SetBounds(m.showStaticLogChkBox.Left()+130, 0, 0, 0)
 	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	//代理详情checkBox
 	m.enableProxyDetailChkBox.SetOnClick(func(sender lcl.IObject) {
@@ -75,19 +88,6 @@ func (m *TGUIForm) impl() {
 		}
 	})
 	//---- end 启用代理详情 checkbox ----
-
-	//---- begin 显示普通请求日志 checkbox ----
-	m.showStaticLogChkBox = lcl.NewCheckBox(m)
-	m.showStaticLogChkBox.SetParent(m)
-	m.showStaticLogChkBox.SetCaption("显示普通请求日志")
-	m.showStaticLogChkBox.SetBounds(m.enableProxyDetailChkBox.Left()+110, 0, 0, 0)
-	m.showStaticLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
-	m.showStaticLogChkBox.SetOnClick(func(sender lcl.IObject) {
-		entity.ShowStaticLog = m.showStaticLogChkBox.Checked()
-	})
-	m.showStaticLogChkBox.SetChecked(true)
-	entity.ShowStaticLog = true
-	//---- end 显示普通请求日志 checkbox ----
 
 	//---- begin 任务栏托盘 tray icon ----
 	trayIcon := lcl.NewTrayIcon(m)

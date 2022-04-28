@@ -9,10 +9,11 @@ import (
 var GUIForm = &TGUIForm{}
 
 var (
-	uiWidth    int32 = 600
-	uiHeight   int32 = 350
-	uiWidthEx  int32 = 400
-	uiHeightEx int32 = 400
+	uiWidth      int32 = 600
+	uiHeight     int32 = 350
+	uiWidthEx    int32 = 400
+	uiHeightEx   int32 = 400
+	stateBarText       = "https://gitee.com/snxamdf/http-server"
 )
 
 type TGUIForm struct {
@@ -21,7 +22,7 @@ type TGUIForm struct {
 	proxyLogsGrid           *lcl.TStringGrid              //代理详情列表UI
 	ProxyDetails            map[int32]*entity.ProxyDetail //代理详情数据集合
 	ProxyDetailUI           *ProxyDetailPanel             //代理PanelUI
-	stbar                   *lcl.TStatusBar
+	stateBar                *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	showStaticLogChkBox     *lcl.TCheckBox
 	enableProxyDetailChkBox *lcl.TCheckBox
