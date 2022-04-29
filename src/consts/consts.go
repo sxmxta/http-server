@@ -27,3 +27,13 @@ const (
 	P4            //代理请求响应成功
 	P5            //响应给客户端失败
 )
+
+//1=添加 2=删除 3=修改
+type PIOption int
+
+const (
+	//1=添加 2=删除 3=修改
+	PIOption1 = iota + 1
+	PIOption2
+	PIOption3
+)

@@ -184,7 +184,7 @@ func (m *TGUIForm) proxyGrid() {
 	item.SetOnClick(func(lcl.IObject) {
 		fmt.Println(logGridUrlAddPICValue)
 		if logGridUrlAddPICValue != "" {
-			entity.PIC.AddProxyInterceptConfig(logGridUrlAddPICValue)
+			m.ProxyDetailUI.ProxyInterceptConfigPanel.ProxyInterceptSettingPanel.InterceptGridAdd(logGridUrlAddPICValue)
 		}
 	})
 	pm.Items().Add(item)
@@ -249,13 +249,11 @@ var (
 func (m *TGUIForm) proxyLogsGridAdd(proxyDetail *entity.ProxyDetail) {
 	m.proxyLogsGridCountRow = proxyDetail.ID + 1
 	lcl.ThreadSync(func() {
-		//proxyDetail.Row = m.proxyLogsGridCountRow
 		//在指定行插入行
 		m.proxyLogsGrid.InsertColRow(false, logGridInsertRow)
 		//给指定行的列设置值
 		m.proxyLogsGrid.SetCells(0, logGridInsertRow, fmt.Sprintf("%v", proxyDetail.ID))
 		m.proxyLogsGrid.SetCells(1, logGridInsertRow, proxyDetail.Method+" - "+proxyDetail.TargetUrl)
-		//text, _ := proxyDetail.GetState()
 		m.proxyLogsGrid.SetCells(2, logGridInsertRow, "")
 		m.proxyLogsGrid.SetCells(3, logGridInsertRow, fmt.Sprintf("%v", proxyDetail.StateCode))
 		//给表格设置新总行数

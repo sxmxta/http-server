@@ -37,9 +37,9 @@ type ProxyDetailPanel struct {
 func (m *ProxyDetailPanel) init() {
 	m.RequestDetailViewPanel = &RequestDetailViewPanel{}
 	m.ProxyInterceptConfigPanel = &ProxyInterceptPanel{
-		ProxyInterceptRequestPanel:  &ProxyInterceptRequestPanel{ParamsGridRow: 1, HeadersGridRow: 1, TBodyPanel: &ProxyInterceptRequestBodyPanel{FormDataGridRow: 1, FormDataGridList: map[int32]*entity.FormDataGridList{}}},
+		ProxyInterceptRequestPanel:  &ProxyInterceptRequestPanel{ParamsGridRowCount: 1, HeadersGridRowCount: 1, TBodyPanel: &ProxyInterceptRequestBodyPanel{FormDataGridRowCount: 1, FormDataGridList: map[int32]*entity.FormDataGridList{}}},
 		ProxyInterceptResponsePanel: &ProxyInterceptResponsePanel{},
-		ProxyInterceptSettingPanel:  &ProxyInterceptSettingPanel{InterceptGridRow: 1},
+		ProxyInterceptSettingPanel:  &ProxyInterceptSettingPanel{InterceptGridRowCount: 1},
 	}
 }
 

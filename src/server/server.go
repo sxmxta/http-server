@@ -118,6 +118,7 @@ func RegisterRoute(route string, handler HandlerFUNC) {
 
 func StartHttpServer() error {
 	Init()
+	go proxyInterceptConfigChanListen()
 	var serverIP = config.Cfg.Server.IP
 	var serverPort = config.Cfg.Server.PORT
 
@@ -154,7 +155,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}()
 	var path = r.URL.Path
 	if ok, proxyAddr := isProxy(r); ok {
-		proxy(proxyAddr, w, r)
+		proxyServer(proxyAddr, w, r)
 	} else {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
 		//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")

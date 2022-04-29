@@ -18,7 +18,23 @@ import (
 var id int32
 var jar, _ = cookiejar.New(nil)
 
-func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
+//监听 代理拦截配置数据传输通道
+func proxyInterceptConfigChanListen() {
+	for {
+		select {
+		case picc := <-entity.ProxyInterceptConfigChan:
+			if picc.Option == consts.PIOption1 {
+				//添加
+			} else if picc.Option == consts.PIOption2 {
+				//删除
+			}
+			fmt.Println(picc.Index, picc.Option, picc.Enable(), picc.InterceptUrl())
+		}
+	}
+}
+
+//代理服务
+func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
 			entity.PutLogsProxyTime("Http proxy 致命错误")

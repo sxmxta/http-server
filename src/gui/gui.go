@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/http-server/src/entity"
@@ -52,10 +53,11 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 func (m *TGUIForm) dataListen() {
 	for {
 		select {
-		case proxyDetail, ok := <-entity.ProxyDetailChan:
-			if ok {
-				m.setProxyDetail(proxyDetail)
-			}
+		case proxyDetail := <-entity.ProxyDetailChan:
+			m.setProxyDetail(proxyDetail)
+		case proxyInterceptFlow := <-entity.ProxyFlowInterceptChan:
+			fmt.Println(proxyInterceptFlow)
 		}
+
 	}
 }
