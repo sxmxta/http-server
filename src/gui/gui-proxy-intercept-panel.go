@@ -47,7 +47,11 @@ type ProxyInterceptResponsePanel struct {
 
 //代理拦截配置Panel
 type ProxyInterceptSettingPanel struct {
-	TPanel *lcl.TPanel
+	TPanel            *lcl.TPanel
+	OnOffBtn          *lcl.TImageButton
+	InterceptGrid     *lcl.TStringGrid
+	InterceptGridRow  int32
+	InterceptGridData map[int32]string
 }
 
 //proxy intercept request UI
@@ -486,9 +490,88 @@ func (m *ProxyInterceptResponsePanel) initUI() {
 	bodyPanel.SetAlign(types.AlClient)
 }
 
-//setting
+//代理拦截配置Panel
 func (m *ProxyInterceptSettingPanel) initUI() {
+	m.InterceptGridData = map[int32]string{}
+	//开关按钮
+	m.OnOffBtn = lcl.NewImageButton(m.TPanel)
+	m.OnOffBtn.SetParent(m.TPanel)
+	m.OnOffBtn.SetImageCount(1)
+	m.OnOffBtn.SetBounds(m.TPanel.Width()-80, 10, 68, 32)
+	m.OnOffBtn.SetCursor(types.CrHandPoint)
+	m.OnOffBtn.SetOnClick(func(sender lcl.IObject) {
+		entity.ProxyInterceptEnable = !entity.ProxyInterceptEnable
+		if entity.ProxyInterceptEnable {
+			m.OnOffBtn.Picture().LoadFromFSFile("resources/btn-off.png")
+		} else {
+			m.OnOffBtn.Picture().LoadFromFSFile("resources/btn-on.png")
+		}
+	})
+	m.OnOffBtn.Click() //执行一次 把图片加载进来
+	//列表
+	m.InterceptGrid = lcl.NewStringGrid(m.TPanel)
+	m.InterceptGrid.SetParent(m.TPanel)
+	m.InterceptGrid.SetFixedCols(0)
+	m.InterceptGrid.SetFixedColor(colors.ClGreen)
+	m.InterceptGrid.SetBorderStyle(types.BsNone)
+	m.InterceptGrid.SetFlat(true)
+	m.InterceptGrid.SetOptions(m.InterceptGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs, types.GoRowHighlight))
+	m.InterceptGrid.SetBounds(0, 50, m.TPanel.Width(), m.TPanel.Height()-50)
+	m.InterceptGrid.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	m.InterceptGrid.SetOnSetEditText(func(sender lcl.IObject, aCol, aRow int32, value string) {
+		if aCol == 1 {
+			m.InterceptGridData[aRow] = value
+			if aRow == m.InterceptGridRow-1 && value != "" {
+				m.InterceptGridAdd("")
+			}
+		}
+	})
+	m.InterceptGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
+		//按钮触发
+		if aCol == 2 { //删除行
+			if m.InterceptGridRow > 2 {
+				m.InterceptGrid.DeleteRow(aRow)
+				//entity.PIC.DelProxyInterceptConfig()
+				m.InterceptGridRow--
+			}
+		}
+	})
+	m.InterceptGridHead()
+	m.InterceptGrid.SetRowCount(m.InterceptGridRow)
+	m.InterceptGridAdd("")
+}
 
+//请求拦截参数列表添加
+func (m *ProxyInterceptSettingPanel) InterceptGridAdd(URL string) {
+	lcl.ThreadSync(func() {
+		m.InterceptGrid.InsertColRow(false, m.InterceptGridRow)
+		m.InterceptGrid.SetCells(0, m.InterceptGridRow, "1")
+		m.InterceptGrid.SetCells(1, m.InterceptGridRow, URL)
+		m.InterceptGrid.SetCells(2, m.InterceptGridRow, "删除")
+		m.InterceptGridRow++
+		m.InterceptGrid.SetRowCount(m.InterceptGridRow)
+	})
+}
+
+//请求拦截参数表格头
+func (m *ProxyInterceptSettingPanel) InterceptGridHead() {
+	var chkBox = m.InterceptGrid.Columns().Add()
+	chkBox.SetWidth(30)
+	chkBox.SetButtonStyle(types.CbsCheckboxColumn)
+	chkBox.Title().SetCaption("启用")
+
+	var colNo = m.InterceptGrid.Columns().Add()
+	colNo.SetWidth(m.TPanel.Width() - 100)
+	colNo.Title().SetCaption("拦截地址")
+	colNo.Title().SetAlignment(types.TaCenter)
+	colNo.SetAlignment(types.TaLeftJustify)
+
+	var delBtn = m.InterceptGrid.Columns().Add()
+	delBtn.SetWidth(60)
+	delBtn.Title().SetCaption("操作")
+	delBtn.Title().SetAlignment(types.TaCenter)
+	delBtn.SetButtonStyle(types.CbsButtonColumn)
+	delBtn.SetAlignment(types.TaCenter)
 }
 
 //代理拦截配置Panel

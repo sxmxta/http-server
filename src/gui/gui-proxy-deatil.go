@@ -39,7 +39,7 @@ func (m *ProxyDetailPanel) init() {
 	m.ProxyInterceptConfigPanel = &ProxyInterceptPanel{
 		ProxyInterceptRequestPanel:  &ProxyInterceptRequestPanel{ParamsGridRow: 1, HeadersGridRow: 1, TBodyPanel: &ProxyInterceptRequestBodyPanel{FormDataGridRow: 1, FormDataGridList: map[int32]*entity.FormDataGridList{}}},
 		ProxyInterceptResponsePanel: &ProxyInterceptResponsePanel{},
-		ProxyInterceptSettingPanel:  &ProxyInterceptSettingPanel{},
+		ProxyInterceptSettingPanel:  &ProxyInterceptSettingPanel{InterceptGridRow: 1},
 	}
 }
 
