@@ -12,11 +12,10 @@ import (
 //代理拦截配置Panel
 type ProxyInterceptPanel struct {
 	TPanel                      *lcl.TPanel
-	StateLabel                  *lcl.TLabel                             //拦截状态
-	ProxyInterceptRequestPanel  *ProxyInterceptRequestPanel             //代理拦截请求Panel
-	ProxyInterceptResponsePanel *ProxyInterceptResponsePanel            //代理拦截响应Panel
-	ProxyInterceptSettingPanel  *ProxyInterceptSettingPanel             //代理拦截配置Panel
-	ProxyInterceptConfig        map[string]*entity.ProxyInterceptConfig //代理拦截配置
+	StateLabel                  *lcl.TLabel                  //拦截状态
+	ProxyInterceptRequestPanel  *ProxyInterceptRequestPanel  //代理拦截请求Panel
+	ProxyInterceptResponsePanel *ProxyInterceptResponsePanel //代理拦截响应Panel
+	ProxyInterceptSettingPanel  *ProxyInterceptSettingPanel  //代理拦截配置Panel
 }
 
 //代理拦截请求Panel
@@ -49,18 +48,6 @@ type ProxyInterceptResponsePanel struct {
 //代理拦截配置Panel
 type ProxyInterceptSettingPanel struct {
 	TPanel *lcl.TPanel
-}
-
-//添加一个拦截配置
-func (m *ProxyInterceptPanel) AddProxyInterceptConfig(interceptUrl string, enable bool) {
-	m.ProxyInterceptConfig[interceptUrl] = &entity.ProxyInterceptConfig{InterceptUrl: interceptUrl, Enable: enable}
-	//添加到列表
-
-}
-
-//删除一个拦截配置
-func (m *ProxyInterceptPanel) DelProxyInterceptConfig(interceptUrl string) {
-	delete(m.ProxyInterceptConfig, interceptUrl)
 }
 
 //proxy intercept request UI

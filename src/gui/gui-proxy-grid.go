@@ -7,6 +7,8 @@ import (
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"net/url"
+	"strings"
 	"sync"
 )
 
@@ -29,43 +31,40 @@ func (m *TGUIForm) proxyGrid() {
 	// 这里设置不可操作的列和行数
 	m.proxyLogsGrid.SetFixedCols(0)
 	//m.proxyLogsGrid.SetFixedRows(0)
-	// 设置一些选项
-	//m.proxyLogsGrid.SetOptions(m.proxyLogsGrid.Options().Include(types.GoRowHighlight))
+	// 设置一些选项 types.GoRowHighlight NewSet(GoRangeSelect, GoRowSelect)
+	m.proxyLogsGrid.SetOptions(m.proxyLogsGrid.Options().Include(types.GoRangeSelect, types.GoRowSelect))
 	// 设置不可操作列的背景颜色
 	m.proxyLogsGrid.SetFixedColor(colors.ClGreen)
-	//var topRow int32 = 1
-	m.proxyLogsGrid.SetOnMouseWheelUp(func(sender lcl.IObject, shift types.TShiftState, mousePos types.TPoint, handled *bool) {
-		m.proxyLogsGrid.SetTopRow(1)
-	})
-	m.proxyLogsGrid.SetOnMouseWheelDown(func(sender lcl.IObject, shift types.TShiftState, mousePos types.TPoint, handled *bool) {
-		m.proxyLogsGrid.SetTopRow(m.proxyLogsGridCountRow)
-	})
 	// 设置flat后可以用这个修改fixed区域的表格线
 	//m.proxyLogsGrid.SetFixedGridLineColor(colors.ClRed)
 	//m.proxyLogsGrid.SetAnchors(types.NewSet(types.AkBottom, types.AkRight))
 	//m.proxyLogsGrid.SetVisible(false)
 	//绘制表格头
 	m.proxyLogsGridHead()
+	//表格背景色
 	var bgColor = m.proxyLogsGrid.Color()
+	//表格绘制事件
 	m.proxyLogsGrid.SetOnDrawCell(func(sender lcl.IObject, aCol, aRow int32, aRect types.TRect, state types.TGridDrawState) {
 		if aRow < 1 {
 			return
 		}
+		canvas := m.proxyLogsGrid.Canvas()
 		//fmt.Println( aCol, aRow)
+		//重新绘制表格列- 字体 背景 颜色
 		if aCol == 2 || aCol == 3 {
 			var row = m.proxyLogsGridCountRow - aRow
 			//fmt.Println("col", aCol, " aRow", aRow, "  总行", m.proxyLogsGridCountRow, "  实际", row)
 			//row是反正来的
 			if rowStyle, ok := m.ProxyLogsGridRowStyle[row]; ok {
 				for col, style := range rowStyle.GetCols() {
-					if col == aCol && style != nil {
-						if style.IsColor() {
-							m.proxyLogsGrid.Canvas().Brush().SetColor(bgColor)
-							m.proxyLogsGrid.Canvas().FillRect(aRect)
-							m.proxyLogsGrid.Canvas().Font().SetColor(style.TColor())
-							m.proxyLogsGrid.Canvas().TextRect2(&aRect, style.Text(), types.NewSet(types.TfCenter))
-							//fmt.Println(row, aCol, style.Text())
-						}
+					if col == aCol && style != nil && style.IsColor() {
+						//表格重新绘制
+						canvas.Brush().SetColor(bgColor)
+						canvas.FillRect(aRect)
+						//绘制文字
+						canvas.Font().SetColor(style.TColor())
+						canvas.TextRect2(&aRect, style.Text(), types.NewSet(types.TfCenter))
+						//fmt.Println(row, aCol, style.Text())
 					}
 				}
 			}
@@ -76,9 +75,45 @@ func (m *TGUIForm) proxyGrid() {
 			//m.proxyLogsGrid.Canvas().TextRect(aRect, aRect.Left, aRect.Top, "测试测试")// 1 画文字
 			//m.proxyLogsGrid.Canvas().TextRect2(&aRect,"测试测试",types.NewSet(types.TfCenter))// 2 画文字 带有字体设置
 			//m.proxyLogsGrid.Canvas().TextOut(aRect.Left,aRect.Top,"测试测试")// 3 画文字
+		} else {
+			//if m.proxyMouseMoveIndex == aRow && !state.In(types.GdFocused) && !state.In(types.GdSelected) {
+			//	canvas.Brush().SetColor(bgColor - 12)
+			//} else if state.In(types.GdFocused) || state.In(types.GdSelected) {
+			//	canvas.Brush().SetColor(bgColor)
+			//} else {
+			//	canvas.Brush().SetColor(bgColor)
+			//}
+			//canvas.FillRect(aRect)
 		}
 	})
-	//鼠标事件 up
+	//鼠标滚轮事件 up
+	m.proxyLogsGrid.SetOnMouseWheelUp(func(sender lcl.IObject, shift types.TShiftState, mousePos types.TPoint, handled *bool) {
+		m.proxyLogsGrid.SetTopRow(1)
+	})
+	//鼠标滚轮事件 down
+	m.proxyLogsGrid.SetOnMouseWheelDown(func(sender lcl.IObject, shift types.TShiftState, mousePos types.TPoint, handled *bool) {
+		m.proxyLogsGrid.SetTopRow(m.proxyLogsGridCountRow)
+	})
+	//m.proxyLogsGrid.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, x, y int32) {
+	//	if !m.Enabled(){
+	//		return
+	//	}
+	//	var tPoint = m.proxyLogsGrid.MouseToCell(types.TPoint{X: x, Y: y})
+	//	if tPoint.Y < 1 {
+	//		return
+	//	}
+	//	fmt.Println(tPoint.X, tPoint.Y)
+	//	m.proxyMouseMoveIndex = tPoint.Y
+	//	m.Invalidate()
+	//})
+	//m.proxyLogsGrid.SetOnMouseEnter(func(sender lcl.IObject) {
+	//	if !m.Enabled(){
+	//		return
+	//	}
+	//	m.proxyMouseMoveIndex = -1
+	//	m.Invalidate()
+	//})
+	//鼠标点击事件 up
 	m.proxyLogsGrid.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 		if button == types.MbRight { //鼠标右键
 			var point = types.TPoint{}
@@ -89,8 +124,16 @@ func (m *TGUIForm) proxyGrid() {
 			if cell.Y < 1 {
 				return
 			}
-			var value = m.proxyLogsGrid.Cells(cell.X, cell.Y) //取值
-			fmt.Println(value)
+			//找到这一列的值
+			logGridUrlAddPICValue = m.proxyLogsGrid.Cells(1, cell.Y) //取值
+			var v = strings.Split(logGridUrlAddPICValue, " - ")
+			if len(v) == 2 {
+				if url, err := url.Parse(v[1]); err == nil {
+					logGridUrlAddPICValue = url.Path
+					return
+				}
+			}
+			logGridUrlAddPICValue = ""
 		}
 	})
 
@@ -98,6 +141,9 @@ func (m *TGUIForm) proxyGrid() {
 	m.proxyLogsGrid.SetOnSelectCell(func(sender lcl.IObject, aCol, aRow int32, canSelect *bool) {
 		//fmt.Println("SetOnSelectCell", aRow)
 		if aRow > 0 {
+			if !m.Enabled() {
+				return
+			}
 			//实际的ProxyDetails map对应的key
 			logGridSelDetailKey = m.proxyLogsGridCountRow - aRow
 			//放到剪切版
@@ -136,11 +182,9 @@ func (m *TGUIForm) proxyGrid() {
 	item.SetCaption("添加拦截")
 	item.SetShortCutFromString("Ctrl+Shift+A")
 	item.SetOnClick(func(lcl.IObject) {
-		if logGridSelDetailKey != -1 && logGridSelDetailKey > 0 {
-			if row, ok := m.ProxyDetails[logGridSelDetailKey]; ok {
-				fmt.Println(row.TargetUrl)
-				//m.ProxyDetailUI.ProxyInterceptConfigPanel.AddProxyInterceptConfig(value, true)
-			}
+		fmt.Println(logGridUrlAddPICValue)
+		if logGridUrlAddPICValue != "" {
+			entity.PIC.AddProxyInterceptConfig(logGridUrlAddPICValue)
 		}
 	})
 	pm.Items().Add(item)
@@ -156,11 +200,11 @@ func (m *TGUIForm) proxyGrid() {
 	m.proxyLogsGrid.SetPopupMenu(pm)
 }
 
+//更新选中的表格数据到右侧
 func (m *TGUIForm) selectGridUpdate() {
 	if rowData, ok := m.ProxyDetails[logGridSelDetailKey]; ok {
 		m.ProxyDetailUI.RequestDetailViewPanel.updateRequestSheet(rowData)
 		m.ProxyDetailUI.RequestDetailViewPanel.updateResponseSheet(rowData)
-		fmt.Println(rowData.Method)
 	}
 }
 
@@ -195,9 +239,10 @@ func (m *TGUIForm) proxyLogsGridHead() {
 }
 
 var (
-	logGridSelCol2Value string      //选中表格第二列的值
-	logGridSelDetailKey int32  = -1 //选中表格行下标
-	logGridInsertRow    int32  = 1  //在第指定行插入
+	logGridUrlAddPICValue string
+	logGridSelCol2Value   string      //选中表格第二列的值
+	logGridSelDetailKey   int32  = -1 //选中表格行下标
+	logGridInsertRow      int32  = 1  //在第指定行插入
 )
 
 //代理日志grid添加一行
