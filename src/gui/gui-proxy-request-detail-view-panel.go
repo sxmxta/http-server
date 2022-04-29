@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/entity"
 )
@@ -16,7 +15,6 @@ type RequestDetailViewPanel struct {
 	IdEdit                 *lcl.TLabeledEdit
 	MethodComboBox         *lcl.TComboBox
 	HostEdit               *lcl.TLabeledEdit
-	FlowStateLabel         *lcl.TLabel
 	SourceEdit             *lcl.TLabeledEdit
 	TargetEdit             *lcl.TLabeledEdit
 	RequestDetailViewMemo  *lcl.TMemo
@@ -64,18 +62,6 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.HostEdit.EditLabel().SetCaption("HOST")
 	m.HostEdit.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.HostEdit.SetEnabled(enable)
-
-	//流程状态
-	pLeft = m.HostEdit.Left() + m.HostEdit.Width() + 10
-	//pTop = 16
-	m.FlowStateLabel = lcl.NewLabel(m.TPanel)
-	m.FlowStateLabel.SetParent(m.TPanel)
-	m.FlowStateLabel.SetCaption(" - - ")
-	m.FlowStateLabel.SetLeft(pLeft)
-	m.FlowStateLabel.SetTop(pTop)
-	m.FlowStateLabel.Font().SetStyle(types.NewSet(types.FsBold))
-	m.FlowStateLabel.Font().SetSize(12)
-	m.FlowStateLabel.Font().SetColor(colors.ClGray)
 
 	//请求源地址
 	resetPVars()
@@ -137,13 +123,6 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.ResponseDetailViewMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
 }
 
-//更新流程状态label标签显示
-func (m *RequestDetailViewPanel) updateFlowState(proxyDetail *entity.ProxyDetail) {
-	text, color := proxyDetail.GetState()
-	m.FlowStateLabel.SetCaption(text)
-	m.FlowStateLabel.Font().SetColor(color)
-}
-
 //更新请求标签UI
 func (m *RequestDetailViewPanel) updateRequestSheet(proxyDetail *entity.ProxyDetail) {
 	m.IdEdit.SetText(fmt.Sprintf("%v", proxyDetail.ID))
@@ -151,7 +130,6 @@ func (m *RequestDetailViewPanel) updateRequestSheet(proxyDetail *entity.ProxyDet
 	m.MethodComboBox.SetItemIndex(int32(consts.GetHttpMethodsIdx(proxyDetail.Method)))
 	m.SourceEdit.SetText(proxyDetail.SourceUrl)
 	m.TargetEdit.SetText(proxyDetail.TargetUrl)
-	m.updateFlowState(proxyDetail)
 	if jsn, err := json.MarshalIndent(proxyDetail.Request, "", "\t"); err == nil {
 		m.RequestDetailViewMemo.SetText(string(jsn))
 	}

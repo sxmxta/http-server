@@ -66,7 +66,7 @@ func (m *TGUIForm) impl() {
 	m.enableProxyDetailChkBox = lcl.NewCheckBox(m)
 	m.enableProxyDetailChkBox.SetParent(m)
 	m.enableProxyDetailChkBox.SetCaption("启用代理跟踪详情")
-	m.enableProxyDetailChkBox.SetHint("启用该功能严重影响服务性能\n使用于调式接口")
+	m.enableProxyDetailChkBox.SetHint("启用该功能严重影响服务性能\n适用于调式接口")
 	m.enableProxyDetailChkBox.SetShowHint(true)
 	m.enableProxyDetailChkBox.SetBounds(m.showStaticLogChkBox.Left()+130, 0, 0, 0)
 	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))

@@ -20,10 +20,11 @@ var (
 type TGUIForm struct {
 	*lcl.TForm
 	logs                    *lcl.TRichEdit
-	proxyLogsGrid           *lcl.TStringGrid //代理详情列表UI
-	proxyLogsGridRow        int32
-	ProxyDetails            map[int32]*entity.ProxyDetail //代理详情数据集合
-	ProxyDetailUI           *ProxyDetailPanel             //代理PanelUI
+	proxyLogsGrid           *lcl.TStringGrid                        //代理详情列表UI
+	ProxyLogsGridRowStyle   map[int32]*entity.ProxyLogsGridRowStyle //每行的样式
+	proxyLogsGridCountRow   int32                                   //表格总行数
+	ProxyDetails            map[int32]*entity.ProxyDetail           //代理详情数据集合
+	ProxyDetailUI           *ProxyDetailPanel                       //代理PanelUI
 	stateBar                *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	showStaticLogChkBox     *lcl.TCheckBox
@@ -39,7 +40,8 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.SetWidth(uiWidth)
 	m.SetHeight(uiHeight)
 	m.ProxyDetails = make(map[int32]*entity.ProxyDetail)
-	m.proxyLogsGridRow = 1
+	m.proxyLogsGridCountRow = 1
+	m.ProxyLogsGridRowStyle = make(map[int32]*entity.ProxyLogsGridRowStyle)
 	m.impl()
 	//数据监听 channel
 	go m.dataListen()
@@ -49,8 +51,10 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 func (m *TGUIForm) dataListen() {
 	for {
 		select {
-		case proxyDetail := <-entity.ProxyDetailChan:
-			m.setProxyDetail(proxyDetail)
+		case proxyDetail, ok := <-entity.ProxyDetailChan:
+			if ok {
+				m.setProxyDetail(proxyDetail)
+			}
 		}
 	}
 }

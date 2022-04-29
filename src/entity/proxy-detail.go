@@ -6,10 +6,23 @@ import (
 	"gitee.com/snxamdf/http-server/src/consts"
 )
 
+type ProxyLogsGridRowStyle struct {
+	cols map[int32]*ProxyLogsGridColStyle
+}
+
+type ProxyLogsGridColStyle struct {
+	isColor     bool
+	isFontStyle bool
+	text        string
+	tColor      types.TColor
+	fontStyle   types.TFontStyle
+}
+
 //代理请求详情
 type ProxyDetail struct {
-	Error     error               `json:"-"`
-	State     consts.ProxyFlow    `json:"-"`
+	Error     error            `json:"-"`
+	State     consts.ProxyFlow `json:"-"`
+	StateCode int
 	ID        int32               `json:"-"`
 	Method    string              `json:"method"`
 	SourceUrl string              `json:"source_url"`
@@ -17,7 +30,7 @@ type ProxyDetail struct {
 	Host      string              `json:"host"`
 	Request   ProxyRequestDetail  `json:"request"`
 	Response  ProxyResponseDetail `json:"response"`
-	Row       int32               `json:"-"`
+	//Row       int32               `json:"-"`
 }
 
 type ProxyRequestDetail struct {
@@ -40,7 +53,7 @@ func (m *ProxyDetail) GetState() (string, types.TColor) {
 	} else if m.State == consts.P1 {
 		return "初始失败", colors.ClRed
 	} else if m.State == consts.P2 {
-		return "发送请求", colors.ClLawngreen
+		return "发送请求", colors.ClMediumseagreen
 	} else if m.State == consts.P3 {
 		return "发送失败", colors.ClRed
 	} else if m.State == consts.P4 {
@@ -50,4 +63,60 @@ func (m *ProxyDetail) GetState() (string, types.TColor) {
 	} else {
 		return " - - ", colors.ClGray
 	}
+}
+
+func (m *ProxyLogsGridRowStyle) SetColStyle(col int32, style *ProxyLogsGridColStyle) {
+	m.cols[col] = style
+}
+func (m *ProxyLogsGridRowStyle) GetColStyle(col int32) *ProxyLogsGridColStyle {
+	if colStyle, ok := m.cols[col]; ok {
+		return colStyle
+	} else {
+		colStyle = NewColStyle(0, 0)
+		colStyle.SetTColor(colors.ClBlack)
+		m.cols[col] = colStyle
+		return colStyle
+	}
+}
+func (m *ProxyLogsGridRowStyle) GetCols() map[int32]*ProxyLogsGridColStyle {
+	return m.cols
+}
+
+func NewRowStyle() *ProxyLogsGridRowStyle {
+	return &ProxyLogsGridRowStyle{cols: map[int32]*ProxyLogsGridColStyle{}}
+}
+
+func NewColStyle(tColor types.TColor, font types.TFontStyle) *ProxyLogsGridColStyle {
+	return &ProxyLogsGridColStyle{tColor: tColor, fontStyle: font}
+}
+
+func (m *ProxyLogsGridColStyle) TColor() types.TColor {
+	return m.tColor
+}
+func (m *ProxyLogsGridColStyle) FontStyle() types.TFontStyle {
+	return m.fontStyle
+}
+func (m *ProxyLogsGridColStyle) SetTColor(color types.TColor) *ProxyLogsGridColStyle {
+	m.isColor = true
+	m.tColor = color
+	return m
+}
+func (m *ProxyLogsGridColStyle) SetFontStyle(fontStyle types.TFontStyle) *ProxyLogsGridColStyle {
+	m.isFontStyle = true
+	m.fontStyle = fontStyle
+	return m
+}
+
+func (m *ProxyLogsGridColStyle) IsFontStyle() bool {
+	return m.isFontStyle
+}
+func (m *ProxyLogsGridColStyle) IsColor() bool {
+	return m.isColor
+}
+func (m *ProxyLogsGridColStyle) Text() string {
+	return m.text
+}
+func (m *ProxyLogsGridColStyle) SetText(text string) *ProxyLogsGridColStyle {
+	m.text = text
+	return m
 }

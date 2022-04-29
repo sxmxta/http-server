@@ -48,6 +48,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			Method:    r.Method,
 			Host:      r.Host,
 			State:     consts.P0,
+			StateCode: 0,
 			Request: entity.ProxyRequestDetail{
 				URLParams:  r.URL.Query(),
 				FormParams: r.PostForm,
@@ -70,6 +71,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		if proxyDetail != nil {
 			proxyDetail.Error = err
 			proxyDetail.State = consts.P1
+			proxyDetail.StateCode = 1
 			entity.ProxyDetailChan <- proxyDetail
 		}
 		entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
@@ -96,6 +98,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		if proxyDetail != nil {
 			proxyDetail.Error = err
 			proxyDetail.State = consts.P3
+			proxyDetail.StateCode = 504
 			entity.ProxyDetailChan <- proxyDetail
 		}
 		buf := new(bytes.Buffer)
@@ -120,6 +123,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 				proxyDetail.Response.Header = response.Header
 				proxyDetail.Response.Size = wi
 				proxyDetail.State = consts.P4
+				proxyDetail.StateCode = response.StatusCode
 				entity.ProxyDetailChan <- proxyDetail
 				_, err = w.Write(buf.Bytes())
 			}
@@ -131,6 +135,7 @@ func proxy(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			if proxyDetail != nil {
 				proxyDetail.Error = err
 				proxyDetail.State = consts.P5
+				proxyDetail.StateCode = response.StatusCode
 				entity.ProxyDetailChan <- proxyDetail
 			}
 			entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())

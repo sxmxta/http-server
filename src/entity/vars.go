@@ -7,4 +7,5 @@ var (
 	EnableProxyDetail    bool
 	GlobalLogMessageChan = make(chan *LogMessage)
 	ProxyDetailChan      = make(chan *ProxyDetail)
+	ProxyInterceptChan   = make(chan *ProxyDetail)
 )
