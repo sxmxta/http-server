@@ -7,9 +7,12 @@ import (
 	"io/ioutil"
 )
 
-var Cfg = &Config{}
+var Cfg = &Config{
+	ROOT: "root", //解析网站文件目录,默认root文件夹
+}
 
 type Config struct {
+	ROOT   string `json:"root"`
 	Server Server
 	Proxy
 	Sqlite3 Sqlite3

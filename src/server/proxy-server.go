@@ -37,7 +37,7 @@ func proxyInterceptConfigChanListen() {
 func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			entity.PutLogsProxyTime("Http proxy 致命错误")
+			entity.PutTimeMessage("Http Proxy Server 致命错误:" + err.(error).Error())
 		}
 	}()
 	//查看url各个信息
@@ -169,7 +169,7 @@ type proxyAddr struct {
 }
 
 //url = / /path /path/ /path/path /path/path/
-func isProxy(r *http.Request) (bool, *proxyAddr) {
+func isProxy(r *http.Request) (*proxyAddr, bool) {
 	urlPath := r.URL.String()
 	for matchUrl, v := range config.Cfg.Proxy.Proxy {
 		if strings.Index(urlPath, matchUrl) == 0 {
@@ -179,10 +179,10 @@ func isProxy(r *http.Request) (bool, *proxyAddr) {
 			p.rewrite = v.Rewrite
 			//解析代理配置地址
 			p.init()
-			return true, p
+			return p, true
 		}
 	}
-	return false, nil
+	return nil, false
 }
 
 func (m *proxyAddr) init() {

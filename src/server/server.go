@@ -17,12 +17,17 @@ import (
 
 var contentType = map[string]string{}
 
+var sites = ""
+
+var routeMapper = make(map[string]HandlerFUNC)
+
 func Init() {
 	mimeTypes, err := emfs.GetResources("resources/mime-types.conf")
 	if err != nil {
 		entity.AppInitSuccess = false
 		entity.PutColorMessage(colors.ClRed, err.Error())
 	} else {
+		//mime types
 		var types = strings.Split(string(mimeTypes), "\n")
 		for _, mime := range types {
 			mime = strings.TrimSpace(mime)
@@ -33,12 +38,10 @@ func Init() {
 				}
 			}
 		}
+		//site root
+		sites = config.Cfg.ROOT
 	}
 }
-
-var sites = "sites"
-
-var routeMapper = make(map[string]HandlerFUNC)
 
 type Route interface {
 }
@@ -150,11 +153,11 @@ type HttpServerHandler struct{}
 func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			entity.PutMessage("Http 致命错误")
+			entity.PutTimeMessage("Http Server 致命错误:" + err.(error).Error())
 		}
 	}()
 	var path = r.URL.Path
-	if ok, proxyAddr := isProxy(r); ok {
+	if proxyAddr, ok := isProxy(r); ok {
 		proxyServer(proxyAddr, w, r)
 	} else {
 		//w.Header().Set("Access-Control-Allow-Origin", "*") //允许访问所有域
@@ -177,13 +180,7 @@ func (*HttpServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else if strings.LastIndex(path, "/") == len(path)-1 {
 			path = path + "index.html"
 		}
-		var (
-			byt []byte
-			err error
-		)
-		var filePath = fmt.Sprintf("%s%s", sites, path)
-		byt, err = ioutil.ReadFile(filePath)
-		if err != nil {
+		if byt, err := ioutil.ReadFile(sites + path); err != nil {
 			var content = `{"code":"404","data":"你访问的地址不存在"}`
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(404)
