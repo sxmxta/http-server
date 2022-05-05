@@ -13,7 +13,11 @@ import (
 //代理拦截Panel
 type ProxyInterceptPanel struct {
 	TPanel                      *lcl.TPanel
-	StateLabel                  *lcl.TLabel                  //拦截状态
+	State                       int32            //当前状态
+	UrlAddrEdit                 *lcl.TEdit       //拦截地址
+	StateLabel                  *lcl.TStaticText //拦截状态
+	StateOkBtn                  *lcl.TButton     //拦截状态确认按钮
+	interceptPageControl        *lcl.TPageControl
 	ProxyInterceptRequestPanel  *ProxyInterceptRequestPanel  //代理拦截请求Panel
 	ProxyInterceptResponsePanel *ProxyInterceptResponsePanel //代理拦截响应Panel
 	ProxyInterceptSettingPanel  *ProxyInterceptSettingPanel  //代理拦截配置Panel
@@ -111,7 +115,8 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	})
 	m.RequestQueryParamsGridHead() //请求拦截参数表格头
 	m.ParamsGrid.SetRow(m.ParamsGridRowCount)
-	m.QueryParamsGridAdd("", "") //默认添加一条
+	m.ParamsGrid.SetRowCount(m.ParamsGridRowCount)
+	//m.QueryParamsGridAdd("", "") //默认添加一条
 	//--- end --- Request Query Params
 
 	//--- begin --- Request Headers
@@ -156,7 +161,8 @@ func (m *ProxyInterceptRequestPanel) initUI() {
 	})
 	m.HeaderGridHead()
 	m.HeadersGrid.SetRow(m.HeadersGridRowCount)
-	m.HeaderGridAdd("", "")
+	m.HeadersGrid.SetRowCount(m.ParamsGridRowCount)
+	//m.HeaderGridAdd("", "")
 	//--- end --- Request Headers
 
 	//--- begin --- Request Body
@@ -314,7 +320,8 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 	})
 	m.FormDataGridHead()
 	m.FormDataGrid.SetRow(m.FormDataGridRowCount)
-	m.FormDataGridAdd("", "")
+	m.FormDataGrid.SetRowCount(m.FormDataGridRowCount)
+	//m.FormDataGridAdd("", "")
 	//按钮
 	var reqFormAddBtn = lcl.NewButton(m.FormDataGridPanel)
 	reqFormAddBtn.SetParent(m.FormDataGridPanel)
@@ -405,13 +412,13 @@ func (m *ProxyInterceptRequestPanel) HeaderGridHead() {
 	colNo.SetWidth(180)
 	colNo.Title().SetCaption("Key")
 	colNo.Title().SetAlignment(types.TaCenter)
-	colNo.SetAlignment(types.TaCenter)
+	colNo.SetAlignment(types.TaLeftJustify)
 
 	var colAddr = m.HeadersGrid.Columns().Add()
 	colAddr.SetWidth(180)
 	colAddr.Title().SetCaption("Value")
 	colAddr.Title().SetAlignment(types.TaCenter)
-	colAddr.SetAlignment(types.TaCenter)
+	colAddr.SetAlignment(types.TaLeftJustify)
 
 	var delBtn = m.HeadersGrid.Columns().Add()
 	delBtn.SetWidth(60)
@@ -446,13 +453,13 @@ func (m *ProxyInterceptRequestPanel) RequestQueryParamsGridHead() {
 	colNo.SetWidth(180)
 	colNo.Title().SetCaption("Key")
 	colNo.Title().SetAlignment(types.TaCenter)
-	colNo.SetAlignment(types.TaCenter)
+	colNo.SetAlignment(types.TaLeftJustify)
 
 	var colAddr = m.ParamsGrid.Columns().Add()
 	colAddr.SetWidth(180)
 	colAddr.Title().SetCaption("Value")
 	colAddr.Title().SetAlignment(types.TaCenter)
-	colAddr.SetAlignment(types.TaCenter)
+	colAddr.SetAlignment(types.TaLeftJustify)
 
 	var delBtn = m.ParamsGrid.Columns().Add()
 	delBtn.SetWidth(60)
@@ -519,7 +526,7 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 			configData := m.InterceptGridConfigData[aRow-1]
 			configData.SetInterceptUrl(value)
 			configData.Option = consts.PIOption3
-			//entity.ProxyInterceptConfigChan <- m.InterceptGridConfigData[aRow-1] //发送到通道
+			entity.ProxyInterceptConfigChan <- configData //发送到通道
 			if aRow == m.InterceptGridRowCount-1 && value != "" {
 				m.InterceptGridAdd("")
 			}
@@ -528,14 +535,10 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 	m.OnOffBtn.SetOnClick(func(sender lcl.IObject) {
 		entity.ProxyInterceptEnable = !entity.ProxyInterceptEnable
 		if entity.ProxyInterceptEnable {
-			m.OnOffBtn.Picture().LoadFromFSFile("resources/btn-off.png")
-		} else {
 			m.OnOffBtn.Picture().LoadFromFSFile("resources/btn-on.png")
+		} else {
+			m.OnOffBtn.Picture().LoadFromFSFile("resources/btn-off.png")
 		}
-		//for k, v := range m.InterceptGridConfigData {
-		//	fmt.Println(k, v.InterceptUrl(), v.Enable())
-		//}
-		//fmt.Println()
 	})
 	m.OnOffBtn.Click() //执行一次 把图片加载进来
 	//列表中的按钮点击事件
@@ -559,7 +562,10 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 	m.InterceptGrid.SetOnCheckboxToggled(func(sender lcl.IObject, aCol, aRow int32, aState types.TCheckBoxState) {
 		if aCol == 0 && aRow > 0 {
 			var checked = aState == types.CbChecked
-			m.InterceptGridConfigData[aRow-1].SetEnable(checked)
+			configData := m.InterceptGridConfigData[aRow-1]
+			configData.Option = consts.PIOption3
+			configData.SetEnable(checked)
+			entity.ProxyInterceptConfigChan <- configData //发送到通道
 		}
 	})
 	m.InterceptGridHead()
@@ -614,17 +620,18 @@ func (m *ProxyInterceptSettingPanel) InterceptGridHead() {
 func (m *ProxyInterceptPanel) initUI() {
 	resetPVars()
 	pLeft = 0
-	pTop = 0
+	pTop = 30
 	pWidth = m.TPanel.Width()
-	pHeight = m.TPanel.Height()
+	pHeight = m.TPanel.Height() - pTop
 
-	reqPageControl := lcl.NewPageControl(m.TPanel) //Tabs 的控制标签
-	reqPageControl.SetParent(m.TPanel)
-	reqPageControl.SetBounds(pLeft, pTop, pWidth, pHeight)
-	reqPageControl.SetAlign(types.AlClient)
+	m.interceptPageControl = lcl.NewPageControl(m.TPanel) //Tabs 的控制标签
+	m.interceptPageControl.SetParent(m.TPanel)
+	m.interceptPageControl.SetBounds(pLeft, pTop, pWidth, pHeight)
+	m.interceptPageControl.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	//m.interceptPageControl.SetAlign(types.AlClient)
 
-	sheetInterReq := lcl.NewTabSheet(reqPageControl) //标签页
-	sheetInterReq.SetPageControl(reqPageControl)
+	sheetInterReq := lcl.NewTabSheet(m.interceptPageControl) //标签页
+	sheetInterReq.SetPageControl(m.interceptPageControl)
 	sheetInterReq.SetCaption("　拦截请求　")
 	sheetInterReq.SetAlign(types.AlClient)
 	m.ProxyInterceptRequestPanel.TPanel = lcl.NewPanel(m.TPanel) //ProxyInterceptRequestPanel 标签页
@@ -632,8 +639,8 @@ func (m *ProxyInterceptPanel) initUI() {
 	m.ProxyInterceptRequestPanel.TPanel.SetBounds(0, 0, pWidth, pHeight)
 	m.ProxyInterceptRequestPanel.TPanel.SetAlign(types.AlClient)
 
-	sheetInterRes := lcl.NewTabSheet(reqPageControl) //标签页
-	sheetInterRes.SetPageControl(reqPageControl)
+	sheetInterRes := lcl.NewTabSheet(m.interceptPageControl) //标签页
+	sheetInterRes.SetPageControl(m.interceptPageControl)
 	sheetInterRes.SetCaption("　拦截响应　")
 	sheetInterRes.SetAlign(types.AlClient)
 	m.ProxyInterceptResponsePanel.TPanel = lcl.NewPanel(m.TPanel) //responsePanel 标签页
@@ -641,8 +648,8 @@ func (m *ProxyInterceptPanel) initUI() {
 	m.ProxyInterceptResponsePanel.TPanel.SetBounds(0, 0, pWidth, pHeight)
 	m.ProxyInterceptResponsePanel.TPanel.SetAlign(types.AlClient)
 
-	sheetInterSet := lcl.NewTabSheet(reqPageControl) //标签页
-	sheetInterSet.SetPageControl(reqPageControl)
+	sheetInterSet := lcl.NewTabSheet(m.interceptPageControl) //标签页
+	sheetInterSet.SetPageControl(m.interceptPageControl)
 	sheetInterSet.SetCaption("　拦截配置　")
 	sheetInterSet.SetAlign(types.AlClient)
 	m.ProxyInterceptSettingPanel.TPanel = lcl.NewPanel(m.TPanel) //responsePanel 标签页
@@ -650,22 +657,95 @@ func (m *ProxyInterceptPanel) initUI() {
 	m.ProxyInterceptSettingPanel.TPanel.SetBounds(0, 0, pWidth, pHeight)
 	m.ProxyInterceptSettingPanel.TPanel.SetAlign(types.AlClient)
 
+	//拦截地址
+	urlAddrLabel := lcl.NewLabel(m.TPanel)
+	urlAddrLabel.SetParent(m.TPanel)
+	urlAddrLabel.SetBounds(5, 6, 0, 0)
+	urlAddrLabel.SetCaption("被拦截地址:")
+	m.UrlAddrEdit = lcl.NewEdit(m.TPanel)
+	m.UrlAddrEdit.SetParent(m.TPanel)
+	m.UrlAddrEdit.SetReadOnly(true)
+	m.UrlAddrEdit.SetBounds(75, 2, m.TPanel.Width()-80, 30)
+
+	//状态栏标签
+	state := lcl.NewStaticText(m.TPanel)
+	state.SetParent(m.TPanel)
+	state.SetBounds(300, pTop, 40, 20)
+	state.Font().SetSize(13)
+	state.Font().SetStyle(types.NewSet(types.FsBold))
+	state.Font().SetColor(colors.ClBlue)
+	state.SetCaption("状态: ")
+	m.StateLabel = lcl.NewStaticText(m.TPanel)
+	m.StateLabel.SetParent(m.TPanel)
+	m.StateLabel.SetBounds(342, pTop, 180, 20)
+	m.StateLabel.Font().SetSize(13)
+	m.StateLabel.Font().SetStyle(types.NewSet(types.FsBold))
+	m.StateLabel.Font().SetColor(0x46D12E) //绿0x46D12E 红0x8000FF
+	m.StateLabel.SetCaption("--")
+
+	//状态拦截，等待确认按钮
+	m.StateOkBtn = lcl.NewButton(m.TPanel)
+	m.StateOkBtn.SetParent(m.TPanel)
+	m.StateOkBtn.SetCaption(" 确 认 ")
+	m.StateOkBtn.Font().SetSize(12)
+	m.StateOkBtn.SetBounds(m.TPanel.Width()-80, pTop-1, 70, 25)
+	m.StateOkBtn.SetOnClick(func(sender lcl.IObject) {
+		m.StateOkBtn.SetVisible(false)
+		var state = m.State
+		m.stateReset()
+		if state == consts.SIGNAL10 {
+			entity.ProxyInterceptSignal <- consts.SIGNAL11
+			m.StateLabel.SetCaption("请求发送中...")
+		} else if state == consts.SIGNAL20 {
+			entity.ProxyInterceptSignal <- consts.SIGNAL21
+			m.StateLabel.SetCaption("请求响应中...")
+		}
+	})
+	m.StateOkBtn.SetVisible(true)
+
 	//初始化子组件
 	m.ProxyInterceptRequestPanel.initUI()
 	m.ProxyInterceptResponsePanel.initUI()
 	m.ProxyInterceptSettingPanel.initUI()
+}
 
-	//TODO 测试 tabs 切换
-	testBtn := lcl.NewButton(m.TPanel)
-	testBtn.SetParent(m.TPanel)
-	testBtn.SetCaption("测试切换")
-	testBtn.SetLeft(m.TPanel.Width() - 100)
-	var is int32 = 1
-	testBtn.SetOnClick(func(sender lcl.IObject) {
-		reqPageControl.SetActivePageIndex(is)
-		is++
-		if is > 2 {
-			is = 0
+//更新拦截到的RequestUI
+func (m *ProxyInterceptPanel) updateRequestUI(proxyDetail *entity.ProxyDetail) {
+	m.UrlAddrEdit.SetText(proxyDetail.TargetUrl)
+	for key, param := range proxyDetail.Request.URLParams {
+		for _, p := range param {
+			m.ProxyInterceptRequestPanel.QueryParamsGridAdd(key, p)
 		}
-	})
+	}
+	for key, header := range proxyDetail.Request.Header {
+		for _, p := range header {
+			m.ProxyInterceptRequestPanel.HeaderGridAdd(key, p)
+		}
+	}
+}
+
+//更新拦截到的ResponseUI
+func (m *ProxyInterceptPanel) updateResponseUI(proxyDetail *entity.ProxyDetail) {
+}
+
+//状态相关的值和属性重置
+func (m *ProxyInterceptPanel) stateReset() {
+	m.State = -1
+	m.StateLabel.SetCaption("--")
+	m.StateLabel.Font().SetColor(0x46D12E)
+}
+
+//切换至 request sheet
+func (m *ProxyInterceptPanel) switchRequestPage() {
+	m.interceptPageControl.SetActivePageIndex(0)
+}
+
+//切换至 response sheet
+func (m *ProxyInterceptPanel) switchResponsePage() {
+	m.interceptPageControl.SetActivePageIndex(1)
+}
+
+//切换至 config sheet
+func (m *ProxyInterceptPanel) switchConfigPage() {
+	m.interceptPageControl.SetActivePageIndex(2)
 }

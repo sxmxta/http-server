@@ -17,18 +17,24 @@ import (
 
 var id int32
 var jar, _ = cookiejar.New(nil)
+var interceptConfig = make(map[int32]*entity.ProxyInterceptConfig)
 
 //监听 代理拦截配置数据传输通道
 func proxyInterceptConfigChanListen() {
 	for {
 		select {
 		case picc := <-entity.ProxyInterceptConfigChan:
-			if picc.Option == consts.PIOption1 {
+			if picc.Option == consts.PIOption1 || picc.Option == consts.PIOption3 {
 				//添加
+				interceptConfig[picc.Index] = picc
 			} else if picc.Option == consts.PIOption2 {
 				//删除
+				//var before = interceptConfig[:picc.Index]
+				//var after = interceptConfig[picc.Index+1:]
+				//interceptConfig = append(before, after...)
+				delete(interceptConfig, picc.Index)
 			}
-			fmt.Println(picc.Index, picc.Option, picc.Enable(), picc.InterceptUrl())
+			fmt.Println(picc.Index, picc.Option, picc.Enable(), picc.InterceptUrl(), len(interceptConfig))
 		}
 	}
 }
@@ -48,6 +54,7 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		err         error
 		proxyDetail *entity.ProxyDetail
 		wi          int64
+		isInter     = false
 	)
 	cli := &http.Client{
 		Jar: jar,
@@ -101,12 +108,37 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			request.Header.Add(k, vs)
 		}
 	}
+
 	//发起代理请求
 	//启用代理详情 记录 详情 请求
 	if proxyDetail != nil {
 		proxyDetail.State = consts.P2
 		entity.ProxyDetailChan <- proxyDetail
 	}
+	//开启拦截
+	if entity.ProxyInterceptEnable {
+		if proxyDetail != nil && proxyDetail.State == consts.P2 { //没啥问题 判断是否为发送请求
+			var pic *entity.ProxyInterceptConfig
+			for _, pic = range interceptConfig {
+				if pic.Enable() {
+					fmt.Println(pic.InterceptUrl(), proxyAddr.targetUrl)
+					//判断当前地址是被拦截
+					isInter = strings.Contains(proxyAddr.targetUrl, pic.InterceptUrl())
+					if isInter {
+						break
+					}
+				}
+			}
+			//请求地址拦截
+			if isInter && pic != nil {
+				entity.ProxyFlowInterceptChan <- proxyDetail
+				entity.ProxyInterceptSignal <- consts.SIGNAL10 //发送信号触发request拦截 10
+				signal := <-entity.ProxyInterceptSignal        //等待触发拦截结果 11
+				fmt.Println("signal", signal)
+			}
+		}
+	}
+
 	response, err = cli.Do(request)
 	if err != nil {
 		entity.PutLogsProxyTime(err.Error())
@@ -116,6 +148,11 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			proxyDetail.State = consts.P3
 			proxyDetail.StateCode = 504
 			entity.ProxyDetailChan <- proxyDetail
+			//响应失败
+			if isInter && entity.ProxyInterceptEnable {
+				entity.ProxyFlowInterceptChan <- proxyDetail
+				entity.ProxyInterceptSignal <- consts.SIGNAL22
+			}
 		}
 		buf := new(bytes.Buffer)
 		buf.WriteString(err.Error())
@@ -141,6 +178,13 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 				proxyDetail.State = consts.P4
 				proxyDetail.StateCode = response.StatusCode
 				entity.ProxyDetailChan <- proxyDetail
+				//响应成功
+				if isInter && entity.ProxyInterceptEnable {
+					entity.ProxyFlowInterceptChan <- proxyDetail
+					entity.ProxyInterceptSignal <- consts.SIGNAL20
+					signal := <-entity.ProxyInterceptSignal //等待触发拦截结果 21
+					fmt.Println("signal", signal)
+				}
 				_, err = w.Write(buf.Bytes())
 			}
 		} else {
@@ -153,6 +197,11 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 				proxyDetail.State = consts.P5
 				proxyDetail.StateCode = response.StatusCode
 				entity.ProxyDetailChan <- proxyDetail
+				//响应客户端失败
+				if isInter && entity.ProxyInterceptEnable {
+					entity.ProxyFlowInterceptChan <- proxyDetail
+					entity.ProxyInterceptSignal <- consts.SIGNAL24
+				}
 			}
 			entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
 		} else {
@@ -162,10 +211,11 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 }
 
 type proxyAddr struct {
-	sourceUrl string
-	matchUrl  string
-	targetUrl string
-	rewrite   map[string]string
+	cliReqHost string
+	sourceUrl  string
+	matchUrl   string
+	targetUrl  string
+	rewrite    map[string]string
 }
 
 //url = / /path /path/ /path/path /path/path/
@@ -173,7 +223,14 @@ func isProxy(r *http.Request) (*proxyAddr, bool) {
 	urlPath := r.URL.String()
 	for matchUrl, v := range config.Cfg.Proxy.Proxy {
 		if strings.Index(urlPath, matchUrl) == 0 {
-			p := &proxyAddr{sourceUrl: urlPath}
+			var buf strings.Builder
+			if r.Proto[4] == '/' {
+				buf.WriteString("http://")
+			} else if r.Proto[4] == '5' {
+				buf.WriteString("https://")
+			}
+			buf.WriteString(r.Host)
+			p := &proxyAddr{sourceUrl: urlPath, cliReqHost: buf.String()}
 			p.matchUrl = matchUrl
 			p.targetUrl = v.Target
 			p.rewrite = v.Rewrite
@@ -203,4 +260,5 @@ func (m *proxyAddr) init() {
 		}
 	}
 	m.targetUrl = fmt.Sprintf("%s%s", m.targetUrl, url)
+	m.sourceUrl = fmt.Sprintf("%s%s", m.cliReqHost, m.sourceUrl)
 }
