@@ -1,10 +1,8 @@
 package gui
 
 import (
-	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
-	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/entity"
 )
 
@@ -54,44 +52,15 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 func (m *TGUIForm) dataListen() {
 	for {
 		select {
-		case proxyDetail := <-entity.ProxyDetailChan:
-			m.setProxyDetail(proxyDetail)
-		case proxyInterceptDetail := <-entity.ProxyFlowInterceptChan:
-			//请求拦截-此时会阻塞，等待确定发送请求或响应
-			if proxyInterceptDetail.State == consts.P2 {
-				m.ProxyDetailUI.ProxyInterceptConfigPanel.updateRequestUI(proxyInterceptDetail)
-			} else if proxyInterceptDetail.State == consts.P4 {
-				m.ProxyDetailUI.ProxyInterceptConfigPanel.updateResponseUI(proxyInterceptDetail)
+		case proxyDetail, ok := <-entity.ProxyDetailGridChan:
+			if ok {
+				m.setProxyDetail(proxyDetail)
 			}
-		case signal := <-entity.ProxyInterceptSignal:
-			//10:开始请求拦截 11:结束请求拦截， 20:开始响应拦截 21:结束响应拦截
-			fmt.Println(signal)
-			m.ProxyDetailUI.ProxyInterceptConfigPanel.State = signal
-			lcl.ThreadSync(func() {
-				if signal == consts.SIGNAL10 { //10:开始请求拦截 - 阻塞请求
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateOkBtn.SetVisible(true)
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.switchRequestPage()
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.Font().SetColor(0x8000FF)
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.SetCaption("请求拦截，待确认")
-				} else if signal == consts.SIGNAL20 { //20:开始响应拦截 - 阻塞响应
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateOkBtn.SetVisible(true)
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.switchResponsePage()
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.Font().SetColor(0x8000FF)
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.SetCaption("响应拦截，待确认")
-				} else if signal == consts.SIGNAL22 { //请求超时-请求响应失败
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.switchResponsePage()
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.Font().SetColor(0x8000FF)
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.SetCaption("请求响应失败-超时")
-				} else if signal == consts.SIGNAL23 { //请求超时-响应成功
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.switchResponsePage()
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.Font().SetColor(0x8000FF)
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.SetCaption("请求响应成功")
-				} else if signal == consts.SIGNAL24 { //请求超时-响应客户端失败
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.switchResponsePage()
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.Font().SetColor(0x8000FF)
-					m.ProxyDetailUI.ProxyInterceptConfigPanel.StateLabel.SetCaption("响应客户端失败")
-				}
-			})
+		case proxyInterceptDetail, ok := <-entity.ProxyFlowInterceptChan:
+			if ok {
+				//添加到拦截队列任务
+				m.ProxyDetailUI.ProxyInterceptConfigPanel.interceptQueue(proxyInterceptDetail)
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
@@ -8,10 +9,12 @@ import (
 	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/entity"
 	"path/filepath"
+	"sync"
 )
 
 //代理拦截Panel
 type ProxyInterceptPanel struct {
+	mutex                       sync.Mutex //锁
 	TPanel                      *lcl.TPanel
 	State                       int32            //当前状态
 	UrlAddrEdit                 *lcl.TEdit       //拦截地址
@@ -21,6 +24,9 @@ type ProxyInterceptPanel struct {
 	ProxyInterceptRequestPanel  *ProxyInterceptRequestPanel  //代理拦截请求Panel
 	ProxyInterceptResponsePanel *ProxyInterceptResponsePanel //代理拦截响应Panel
 	ProxyInterceptSettingPanel  *ProxyInterceptSettingPanel  //代理拦截配置Panel
+	InterceptQueue              *common.Queue                //拦截队列
+	InterceptQueueProxyDetail   *entity.ProxyDetail          //当前拦截队列处理的代理
+	IsUseInterceptQueue         bool                         //是否正在使用拦截队列
 }
 
 //代理拦截请求Panel
@@ -332,6 +338,16 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 	})
 }
 
+//清空Body表格
+func (m *ProxyInterceptRequestBodyPanel) ClearFormDataGrid() {
+	lcl.ThreadSync(func() {
+		m.FormDataGrid.Clear()
+		m.FormDataGridRowCount = 1
+		m.FormDataGrid.SetRow(m.FormDataGridRowCount)
+		m.FormDataGrid.SetRowCount(m.FormDataGridRowCount)
+	})
+}
+
 //请求Body表格添加
 func (m *ProxyInterceptRequestBodyPanel) FormDataGridAdd(key, value string) {
 	lcl.ThreadSync(func() {
@@ -401,6 +417,16 @@ func (m *ProxyInterceptRequestPanel) HeaderGridAdd(key, value string) {
 	})
 }
 
+//清空头列表
+func (m *ProxyInterceptRequestPanel) ClearHeaderGrid() {
+	lcl.ThreadSync(func() {
+		m.HeadersGrid.Clear()
+		m.HeadersGridRowCount = 1
+		m.HeadersGrid.SetRow(m.HeadersGridRowCount)
+		m.HeadersGrid.SetRowCount(m.HeadersGridRowCount)
+	})
+}
+
 //请求拦截参数表格头
 func (m *ProxyInterceptRequestPanel) HeaderGridHead() {
 	var chkBox = m.HeadersGrid.Columns().Add()
@@ -426,6 +452,16 @@ func (m *ProxyInterceptRequestPanel) HeaderGridHead() {
 	delBtn.Title().SetAlignment(types.TaCenter)
 	delBtn.SetButtonStyle(types.CbsButtonColumn)
 	delBtn.SetAlignment(types.TaCenter)
+}
+
+//清空参数表格
+func (m *ProxyInterceptRequestPanel) ClearQueryParamsGrid() {
+	lcl.ThreadSync(func() {
+		m.ParamsGrid.Clear()
+		m.ParamsGridRowCount = 1
+		m.ParamsGrid.SetRow(m.ParamsGridRowCount)
+		m.ParamsGrid.SetRowCount(m.ParamsGridRowCount)
+	})
 }
 
 //请求拦截参数列表添加
@@ -586,6 +622,8 @@ func (m *ProxyInterceptSettingPanel) InterceptGridAdd(URL string) {
 		m.InterceptGrid.SetRowCount(m.InterceptGridRowCount)
 	})
 }
+
+//拦截配置列表添加配置数据
 func (m *ProxyInterceptSettingPanel) InterceptGridConfigDataAdd(URL string) {
 	configData := &entity.ProxyInterceptConfig{Index: -1}
 	configData.SetEnable(true)
@@ -604,7 +642,7 @@ func (m *ProxyInterceptSettingPanel) InterceptGridHead() {
 
 	var colNo = m.InterceptGrid.Columns().Add()
 	colNo.SetWidth(m.TPanel.Width() - 100)
-	colNo.Title().SetCaption("拦截地址")
+	colNo.Title().SetCaption("拦截地址-URL")
 	colNo.Title().SetAlignment(types.TaCenter)
 	colNo.SetAlignment(types.TaLeftJustify)
 
@@ -693,15 +731,16 @@ func (m *ProxyInterceptPanel) initUI() {
 		m.StateOkBtn.SetVisible(false)
 		var state = m.State
 		m.stateReset()
+		//发送处理信号，InterceptQueueProxyDetail 当前正在处理的代理请求
 		if state == consts.SIGNAL10 {
-			entity.ProxyInterceptSignal <- consts.SIGNAL11
+			m.InterceptQueueProxyDetail.ProxyInterceptSignal <- consts.SIGNAL11
 			m.StateLabel.SetCaption("请求发送中...")
 		} else if state == consts.SIGNAL20 {
-			entity.ProxyInterceptSignal <- consts.SIGNAL21
+			m.InterceptQueueProxyDetail.ProxyInterceptSignal <- consts.SIGNAL21
 			m.StateLabel.SetCaption("请求响应中...")
 		}
 	})
-	m.StateOkBtn.SetVisible(true)
+	m.StateOkBtn.SetVisible(false)
 
 	//初始化子组件
 	m.ProxyInterceptRequestPanel.initUI()
@@ -709,8 +748,114 @@ func (m *ProxyInterceptPanel) initUI() {
 	m.ProxyInterceptSettingPanel.initUI()
 }
 
+//将要拦截的代理请求添加到队列 一次只处理一个
+func (m *ProxyInterceptPanel) interceptQueue(proxyDetail *entity.ProxyDetail) {
+	if proxyDetail != nil && proxyDetail.IsAddTaskQueue {
+		//先添加到队列
+		fmt.Println("向队列添加")
+		m.InterceptQueue.Push(proxyDetail)
+	}
+	m.mutex.Lock()
+	if !m.IsUseInterceptQueue {
+		//未被占用-设置成已被占用
+		m.IsUseInterceptQueue = true
+		m.mutex.Unlock()
+		m.handlerInterceptQueue()
+	} else {
+		m.mutex.Unlock()
+	}
+}
+
+//处理拦截队列内容 一次只处理一个
+func (m *ProxyInterceptPanel) handlerInterceptQueue() {
+	//取出一个
+	if value, err := m.InterceptQueue.Pop(); err == nil {
+		m.InterceptQueueProxyDetail = value.(*entity.ProxyDetail)
+		fmt.Println("队列剩余", m.InterceptQueue.Len(), "当前处理", m.InterceptQueueProxyDetail.TargetUrl)
+		//自动处理拦截队列内容 一次只处理一个
+		if m.InterceptQueueProxyDetail.State == consts.P2 { //请求处理
+			m.updateRequestUI(m.InterceptQueueProxyDetail)
+		} else if m.InterceptQueueProxyDetail.State == consts.P4 { //响应处理
+			m.updateResponseUI(m.InterceptQueueProxyDetail)
+		}
+		//监听当前处理的
+		go func() {
+		EXIT:
+			for {
+				select {
+				case signal, ok := <-m.InterceptQueueProxyDetail.ProxyInterceptSignal:
+					if ok {
+						//10:开始请求拦截 11:结束请求拦截， 20:开始响应拦截 21:结束响应拦截
+						m.State = signal
+						//fmt.Println("for select signal", signal)
+						if signal == consts.SIGNAL10 { //10:开始请求拦截 - 阻塞请求
+							m.stateOkBtnSetVisible(true)
+							m.switchRequestPage()
+							m.updateStateUI(0x8000FF, "请求拦截，待确认")
+						} else if signal == consts.SIGNAL20 { //20:开始响应拦截 - 阻塞响应
+							m.stateOkBtnSetVisible(true)
+							m.switchResponsePage()
+							m.updateStateUI(0x8000FF, "响应拦截，待确认")
+						} else if signal == consts.SIGNAL22 { //请求超时-请求响应失败
+							m.switchResponsePage()
+							m.updateStateUI(0x8000FF, "请求响应失败-超时")
+						} else if signal == consts.SIGNAL23 { //请求超时-响应成功
+							m.switchResponsePage()
+							m.updateStateUI(0x8000FF, "请求响应成功")
+						} else if signal == consts.SIGNAL24 { //请求超时-响应客户端失败
+							m.switchResponsePage()
+							m.updateStateUI(0x8000FF, "响应客户端失败")
+						} else if signal == consts.SIGNAL30 {
+							break EXIT
+						}
+					}
+				}
+			}
+			//关闭这个通道
+			close(m.InterceptQueueProxyDetail.ProxyInterceptSignal)
+			//处理完立即置空
+			m.InterceptQueueProxyDetail = nil
+			m.State = -1
+			m.mutex.Lock()
+			m.IsUseInterceptQueue = false
+			m.mutex.Unlock()
+			//结束 - 调出队列启用下一个拦截
+			m.interceptQueue(nil)
+		}()
+		//通知一下proxy-server，已准备好，可以继续处理下面流程
+		if m.InterceptQueueProxyDetail != nil {
+			m.InterceptQueueProxyDetail.ProxyInterceptSignal <- consts.SIGNAL01
+		}
+	} else {
+		m.mutex.Lock()
+		//处理完立即置空
+		m.InterceptQueueProxyDetail = nil
+		m.State = -1
+		m.IsUseInterceptQueue = false
+		m.mutex.Unlock()
+	}
+}
+
+//更新状态UI
+func (m *ProxyInterceptPanel) stateOkBtnSetVisible(b bool) {
+	lcl.ThreadSync(func() {
+		m.StateOkBtn.SetVisible(b)
+	})
+}
+
+//更新状态UI
+func (m *ProxyInterceptPanel) updateStateUI(color types.TColor, caption string) {
+	lcl.ThreadSync(func() {
+		m.StateLabel.Font().SetColor(color)
+		m.StateLabel.SetCaption(caption)
+	})
+}
+
 //更新拦截到的RequestUI
 func (m *ProxyInterceptPanel) updateRequestUI(proxyDetail *entity.ProxyDetail) {
+	m.ProxyInterceptRequestPanel.ClearHeaderGrid()
+	m.ProxyInterceptRequestPanel.ClearQueryParamsGrid()
+	m.ProxyInterceptRequestPanel.TBodyPanel.ClearFormDataGrid()
 	m.UrlAddrEdit.SetText(proxyDetail.TargetUrl)
 	for key, param := range proxyDetail.Request.URLParams {
 		for _, p := range param {

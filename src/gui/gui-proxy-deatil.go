@@ -3,6 +3,7 @@ package gui
 import (
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
+	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/entity"
 )
 
@@ -37,6 +38,7 @@ type ProxyDetailPanel struct {
 func (m *ProxyDetailPanel) init() {
 	m.RequestDetailViewPanel = &RequestDetailViewPanel{}
 	m.ProxyInterceptConfigPanel = &ProxyInterceptPanel{
+		InterceptQueue:              common.NewQueue(),
 		State:                       -1,
 		ProxyInterceptRequestPanel:  &ProxyInterceptRequestPanel{ParamsGridRowCount: 1, HeadersGridRowCount: 1, TBodyPanel: &ProxyInterceptRequestBodyPanel{FormDataGridRowCount: 1, FormDataGridList: map[int32]*entity.FormDataGridList{}}},
 		ProxyInterceptResponsePanel: &ProxyInterceptResponsePanel{},

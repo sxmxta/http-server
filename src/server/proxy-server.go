@@ -49,12 +49,13 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	//查看url各个信息
 	//fmt.Print(r.Host, " ", r.Method, " \nr.URL.String ", r.URL.String(), " r.URL.Host ", r.URL.Host, " r.URL.Fragment ", r.URL.Fragment, " r.URL.Hostname ", r.URL.Hostname(), " r.URL.RequestURI ", r.URL.RequestURI(), " r.URL.Scheme ", r.URL.Scheme)
 	var (
-		request     *http.Request
-		response    *http.Response
-		err         error
-		proxyDetail *entity.ProxyDetail
-		wi          int64
-		isInter     = false
+		request             *http.Request
+		response            *http.Response
+		err                 error
+		proxyDetailGridData *entity.ProxyDetail
+		wi                  int64
+		isInter             bool
+		signal              int32 //信号
 	)
 	cli := &http.Client{
 		Jar: jar,
@@ -64,26 +65,28 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&id, 1)
 		var id = atomic.LoadInt32(&id)
 		//err = r.ParseForm()
-		proxyDetail = &entity.ProxyDetail{
-			ID:        id,
-			SourceUrl: proxyAddr.sourceUrl,
-			TargetUrl: proxyAddr.targetUrl,
-			Method:    r.Method,
-			Host:      r.Host,
-			State:     consts.P0,
-			StateCode: 0,
+		proxyDetailGridData = &entity.ProxyDetail{
+			ID:             id,
+			SourceUrl:      proxyAddr.sourceUrl,
+			TargetUrl:      proxyAddr.targetUrl,
+			Method:         r.Method,
+			Host:           r.Host,
+			State:          consts.P0,
+			IsAddTaskQueue: true,
+			StateCode:      0,
 			Request: entity.ProxyRequestDetail{
 				URLParams:  r.URL.Query(),
 				FormParams: r.PostForm,
 			},
-			Response: entity.ProxyResponseDetail{},
+			Response:             entity.ProxyResponseDetail{},
+			ProxyInterceptSignal: make(chan int32),
 		}
 		buf := new(bytes.Buffer)
 		wi, err = buf.ReadFrom(r.Body)
 		if err == nil {
-			proxyDetail.Request.Body = buf.String()
-			proxyDetail.Request.Header = r.Header
-			proxyDetail.Request.Size = wi
+			proxyDetailGridData.Request.Body = buf.String()
+			proxyDetailGridData.Request.Header = r.Header
+			proxyDetailGridData.Request.Size = wi
 			request, err = http.NewRequest(r.Method, proxyAddr.targetUrl, buf)
 		}
 	} else {
@@ -91,11 +94,11 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		//启用代理详情 记录 详情 请求
-		if proxyDetail != nil {
-			proxyDetail.Error = err
-			proxyDetail.State = consts.P1
-			proxyDetail.StateCode = 1
-			entity.ProxyDetailChan <- proxyDetail
+		if proxyDetailGridData != nil {
+			proxyDetailGridData.Error = err
+			proxyDetailGridData.State = consts.P1
+			proxyDetailGridData.StateCode = 1
+			entity.ProxyDetailGridChan <- proxyDetailGridData
 		}
 		entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy http.NewRequest ", err.Error())
 		return
@@ -111,47 +114,60 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 
 	//发起代理请求
 	//启用代理详情 记录 详情 请求
-	if proxyDetail != nil {
-		proxyDetail.State = consts.P2
-		entity.ProxyDetailChan <- proxyDetail
+	if proxyDetailGridData != nil {
+		proxyDetailGridData.State = consts.P2
+		entity.ProxyDetailGridChan <- proxyDetailGridData
 	}
 	//开启拦截
 	if entity.ProxyInterceptEnable {
-		if proxyDetail != nil && proxyDetail.State == consts.P2 { //没啥问题 判断是否为发送请求
+		//没啥问题 判断是否为发送请求
+		if proxyDetailGridData != nil && proxyDetailGridData.State == consts.P2 {
 			var pic *entity.ProxyInterceptConfig
 			for _, pic = range interceptConfig {
-				if pic.Enable() {
-					fmt.Println(pic.InterceptUrl(), proxyAddr.targetUrl)
+				if pic.Enable() && strings.TrimSpace(pic.InterceptUrl()) != "" {
 					//判断当前地址是被拦截
 					isInter = strings.Contains(proxyAddr.targetUrl, pic.InterceptUrl())
 					if isInter {
+						//fmt.Println(pic.InterceptUrl(), proxyAddr.targetUrl)
 						break
 					}
 				}
 			}
 			//请求地址拦截
 			if isInter && pic != nil {
-				entity.ProxyFlowInterceptChan <- proxyDetail
-				entity.ProxyInterceptSignal <- consts.SIGNAL10 //发送信号触发request拦截 10
-				signal := <-entity.ProxyInterceptSignal        //等待触发拦截结果 11
-				fmt.Println("signal", signal)
+				//添加到队列准备-然后等待通知信号继续处理
+				entity.ProxyFlowInterceptChan <- proxyDetailGridData
+				//等待继续处理通知信号 01, 所有后面被拦截的都会阻塞在这里等待通知
+				signal = <-proxyDetailGridData.ProxyInterceptSignal
+				if signal != consts.SIGNAL01 {
+					fmt.Println("程序混乱 signal 信号不正确,应为 01, 实际值", signal)
+				}
+				proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL10 //发送信号触发request拦截 10
+				signal = <-proxyDetailGridData.ProxyInterceptSignal         //等待触发拦截结果 11
+				if signal != consts.SIGNAL11 {
+					fmt.Println("程序混乱 signal 信号不正确,应为 11, 实际值", signal)
+				}
+				//fmt.Println("signal", signal)
 			}
 		}
 	}
-
+	if proxyDetailGridData != nil {
+		//之后的操作都不向列队中添加
+		proxyDetailGridData.IsAddTaskQueue = false
+	}
 	response, err = cli.Do(request)
 	if err != nil {
 		entity.PutLogsProxyTime(err.Error())
 		//启用代理详情 记录 详情 请求
-		if proxyDetail != nil {
-			proxyDetail.Error = err
-			proxyDetail.State = consts.P3
-			proxyDetail.StateCode = 504
-			entity.ProxyDetailChan <- proxyDetail
+		if proxyDetailGridData != nil { //出错了
+			proxyDetailGridData.Error = err
+			proxyDetailGridData.State = consts.P3
+			proxyDetailGridData.StateCode = 504
+			entity.ProxyDetailGridChan <- proxyDetailGridData
 			//响应失败
-			if isInter && entity.ProxyInterceptEnable {
-				entity.ProxyFlowInterceptChan <- proxyDetail
-				entity.ProxyInterceptSignal <- consts.SIGNAL22
+			if isInter {
+				entity.ProxyFlowInterceptChan <- proxyDetailGridData
+				proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL22 //信号 失败
 			}
 		}
 		buf := new(bytes.Buffer)
@@ -168,21 +184,21 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		//启用代理详情 记录 详情 请求
-		if proxyDetail != nil {
+		if proxyDetailGridData != nil {
 			buf := new(bytes.Buffer)
 			wi, err = buf.ReadFrom(response.Body)
 			if err == nil {
-				proxyDetail.Response.Body = buf.String()
-				proxyDetail.Response.Header = response.Header
-				proxyDetail.Response.Size = wi
-				proxyDetail.State = consts.P4
-				proxyDetail.StateCode = response.StatusCode
-				entity.ProxyDetailChan <- proxyDetail
+				proxyDetailGridData.Response.Body = buf.String()
+				proxyDetailGridData.Response.Header = response.Header
+				proxyDetailGridData.Response.Size = wi
+				proxyDetailGridData.State = consts.P4
+				proxyDetailGridData.StateCode = response.StatusCode
+				entity.ProxyDetailGridChan <- proxyDetailGridData
 				//响应成功
 				if isInter && entity.ProxyInterceptEnable {
-					entity.ProxyFlowInterceptChan <- proxyDetail
-					entity.ProxyInterceptSignal <- consts.SIGNAL20
-					signal := <-entity.ProxyInterceptSignal //等待触发拦截结果 21
+					entity.ProxyFlowInterceptChan <- proxyDetailGridData
+					proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL20
+					signal := <-proxyDetailGridData.ProxyInterceptSignal //等待触发拦截结果 21
 					fmt.Println("signal", signal)
 				}
 				_, err = w.Write(buf.Bytes())
@@ -192,21 +208,30 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			//启用代理详情 记录 详情 请求
-			if proxyDetail != nil {
-				proxyDetail.Error = err
-				proxyDetail.State = consts.P5
-				proxyDetail.StateCode = response.StatusCode
-				entity.ProxyDetailChan <- proxyDetail
+			if proxyDetailGridData != nil {
+				proxyDetailGridData.Error = err
+				proxyDetailGridData.State = consts.P5
+				proxyDetailGridData.StateCode = response.StatusCode
+				entity.ProxyDetailGridChan <- proxyDetailGridData
 				//响应客户端失败
-				if isInter && entity.ProxyInterceptEnable {
-					entity.ProxyFlowInterceptChan <- proxyDetail
-					entity.ProxyInterceptSignal <- consts.SIGNAL24
+				if isInter {
+					entity.ProxyFlowInterceptChan <- proxyDetailGridData
+					proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL24
 				}
 			}
 			entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)), err.Error())
 		} else {
+			//响应客户端成功
+			if isInter && proxyDetailGridData != nil {
+				entity.ProxyFlowInterceptChan <- proxyDetailGridData
+				proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL23
+			}
 			entity.PutLogsProxyTime("proxy url:  ", proxyAddr.targetUrl, "  method: ", r.Method, "  proxy response size:", strconv.Itoa(int(wi)))
 		}
+	}
+	//响应完成
+	if isInter && proxyDetailGridData != nil {
+		proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL30
 	}
 }
 
