@@ -46,7 +46,7 @@ type ProxyInterceptRequestBodyPanel struct {
 	FormDataGridPanel    *lcl.TPanel
 	FormDataGrid         *lcl.TStringGrid
 	FormDataGridOpenFile *lcl.TOpenDialog
-	FormDataGridList     map[int32]*entity.FormDataGridList
+	FormDataGridList     []*entity.FormDataGridList
 	FormDataGridRowCount int32
 }
 
@@ -247,16 +247,13 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 	m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Include(types.GoAlwaysShowEditor, types.GoCellHints, types.GoEditing, types.GoTabs, types.GoRowHighlight))
 	m.FormDataGrid.SetAlign(types.AlClient)
 	m.FormDataGrid.SetOnSetEditText(func(sender lcl.IObject, aCol, aRow int32, value string) {
-		row, ok := m.FormDataGridList[aRow]
-		if !ok {
-			row = &entity.FormDataGridList{}
-			m.FormDataGridList[aRow] = row
-		}
+		var idxRow = aRow - 1
+		row := m.FormDataGridList[idxRow]
 		if aCol == 0 { //列 类型
 			m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Exclude(types.GoEditing))
 			//解决同步到列表问题
 			common.NewDebounce(10).Start(func() { //是个线程操作
-				lcl.ThreadSync(func() { //需要主线程同步
+				lcl.ThreadSync(func() {
 					if value == "Text" {
 						m.FormDataGrid.SetCells(3, aRow, "---")
 						row.FileValue = ""
@@ -285,26 +282,23 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 		}
 		if aCol == 1 || aCol == 2 {
 			if aRow == m.FormDataGridRowCount-1 && (row.Key != "" || row.TextValue != "") {
-				m.FormDataGridAdd("", "")
+				m.FormDataGridAdd("Text", "", "")
 			}
 		}
 	})
 	m.FormDataGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
+		var idxRow = aRow - 1
 		//按钮触发
 		if aCol == 4 { //删除行
 			if m.FormDataGridRowCount > 2 {
 				m.FormDataGrid.DeleteRow(aRow)
-				if _, ok := m.FormDataGridList[aRow]; ok {
-					delete(m.FormDataGridList, aRow)
-				}
+				var before = m.FormDataGridList[:idxRow]
+				var after = m.FormDataGridList[idxRow+1:]
+				m.FormDataGridList = append(before, after...)
 				m.FormDataGridRowCount--
 			}
 		} else if aCol == 3 { //选择文件
-			row, ok := m.FormDataGridList[aRow]
-			if !ok {
-				row = &entity.FormDataGridList{}
-				m.FormDataGridList[aRow] = row
-			}
+			row := m.FormDataGridList[idxRow]
 			if row.Type == "File" {
 				//解决同步到列表问题
 				m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Exclude(types.GoEditing))
@@ -333,7 +327,10 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 	reqFormAddBtn.SetCaption("　添加参数　")
 	reqFormAddBtn.SetBounds(520, 2, 80, 30)
 	reqFormAddBtn.SetOnClick(func(sender lcl.IObject) {
-		m.FormDataGridAdd("", "")
+		m.FormDataGridAdd("Text", "", "")
+		//for k, v := range m.FormDataGridList {
+		//	fmt.Printf("%v,%+v\n", k, v)
+		//}
 	})
 }
 
@@ -348,8 +345,18 @@ func (m *ProxyInterceptRequestBodyPanel) ClearFormDataGrid() {
 }
 
 //请求Body表格添加
-func (m *ProxyInterceptRequestBodyPanel) FormDataGridAdd(key, value string) {
+func (m *ProxyInterceptRequestBodyPanel) FormDataGridAdd(t, key, value string) {
 	lcl.ThreadSync(func() {
+		var n = &entity.FormDataGridList{
+			Type: t,
+			Key:  key,
+		}
+		if t == "Text" {
+			n.TextValue = value
+		} else if t == "File" {
+			n.FileValue = value
+		}
+		m.FormDataGridList = append(m.FormDataGridList, n)
 		//在指定位置播放一行
 		m.FormDataGrid.InsertColRow(false, m.FormDataGridRowCount)
 		m.FormDataGrid.SetCells(0, m.FormDataGridRowCount, "Text")
@@ -858,16 +865,27 @@ func (m *ProxyInterceptPanel) updateRequestUI(proxyDetail *entity.ProxyDetail) {
 	m.ProxyInterceptRequestPanel.ClearQueryParamsGrid()
 	m.ProxyInterceptRequestPanel.TBodyPanel.ClearFormDataGrid()
 	m.UrlAddrEdit.SetText(proxyDetail.TargetUrl)
+	//query params
 	for key, param := range proxyDetail.Request.URLParams {
 		for _, p := range param {
 			m.ProxyInterceptRequestPanel.QueryParamsGridAdd(key, p)
 		}
 	}
+	//header
 	for key, header := range proxyDetail.Request.Header {
 		for _, p := range header {
 			m.ProxyInterceptRequestPanel.HeaderGridAdd(key, p)
 		}
 	}
+	//body - raw/json
+	m.ProxyInterceptRequestPanel.TBodyPanel.RawMemo.SetText(proxyDetail.Request.Body)
+	//form-data/x-www-form-urlencoded/binary
+	for key, form := range proxyDetail.Request.FormParams {
+		for _, p := range form {
+			m.ProxyInterceptRequestPanel.TBodyPanel.FormDataGridAdd("", key, p)
+		}
+	}
+
 }
 
 //更新拦截到的ResponseUI
