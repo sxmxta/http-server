@@ -17,5 +17,8 @@ func TestQueue(t *testing.T) {
 	fmt.Println(queue.Len())
 	d, _ := queue.Pop()
 	fmt.Println(d, queue.Len())
+}
+
+func TestPoint(t *testing.T) {
 
 }

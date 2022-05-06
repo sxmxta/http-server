@@ -17,24 +17,14 @@ import (
 
 var id int32
 var jar, _ = cookiejar.New(nil)
-var interceptConfig = make(map[int32]*entity.ProxyInterceptConfig)
+var interceptConfig *[]*entity.ProxyInterceptConfig
 
 //监听 代理拦截配置数据传输通道
 func proxyInterceptConfigChanListen() {
 	for {
 		select {
 		case picc := <-entity.ProxyInterceptConfigChan:
-			if picc.Option == consts.PIOption1 || picc.Option == consts.PIOption3 {
-				//添加
-				interceptConfig[picc.Index] = picc
-			} else if picc.Option == consts.PIOption2 {
-				//删除
-				//var before = interceptConfig[:picc.Index]
-				//var after = interceptConfig[picc.Index+1:]
-				//interceptConfig = append(before, after...)
-				delete(interceptConfig, picc.Index)
-			}
-			fmt.Println(picc.Index, picc.Option, picc.Enable(), picc.InterceptUrl(), len(interceptConfig))
+			interceptConfig = picc
 		}
 	}
 }
@@ -123,12 +113,11 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		//没啥问题 判断是否为发送请求
 		if proxyDetailGridData != nil && proxyDetailGridData.State == consts.P2 {
 			var pic *entity.ProxyInterceptConfig
-			for _, pic = range interceptConfig {
+			for _, pic = range *interceptConfig {
 				if pic.Enable() && strings.TrimSpace(pic.InterceptUrl()) != "" {
 					//判断当前地址是被拦截
 					isInter = strings.Contains(proxyAddr.targetUrl, pic.InterceptUrl())
 					if isInter {
-						//fmt.Println(pic.InterceptUrl(), proxyAddr.targetUrl)
 						break
 					}
 				}

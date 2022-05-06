@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"fmt"
 	"gitee.com/snxamdf/golcl/lcl"
 	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/golcl/lcl/types/colors"
@@ -58,11 +57,11 @@ type ProxyInterceptResponsePanel struct {
 
 //代理拦截配置Panel
 type ProxyInterceptSettingPanel struct {
-	TPanel                  *lcl.TPanel
-	OnOffBtn                *lcl.TImageButton
-	InterceptGrid           *lcl.TStringGrid
-	InterceptGridRowCount   int32
-	InterceptGridConfigData []*entity.ProxyInterceptConfig
+	TPanel        *lcl.TPanel
+	OnOffBtn      *lcl.TImageButton
+	InterceptGrid *lcl.TStringGrid
+	//InterceptGridRowCount   int32
+	InterceptGridConfigData *[]*entity.ProxyInterceptConfig
 }
 
 //proxy intercept request UI
@@ -539,7 +538,7 @@ func (m *ProxyInterceptResponsePanel) initUI() {
 
 //代理拦截配置Panel
 func (m *ProxyInterceptSettingPanel) initUI() {
-	m.InterceptGridConfigData = []*entity.ProxyInterceptConfig{}
+	m.InterceptGridConfigData = &[]*entity.ProxyInterceptConfig{}
 	//开关按钮
 	m.OnOffBtn = lcl.NewImageButton(m.TPanel)
 	m.OnOffBtn.SetParent(m.TPanel)
@@ -559,11 +558,12 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 	//编辑事件
 	m.InterceptGrid.SetOnSetEditText(func(sender lcl.IObject, aCol, aRow int32, value string) {
 		if aCol == 1 && aRow > 0 { //URL地址列
-			configData := m.InterceptGridConfigData[aRow-1]
+			configData := (*m.InterceptGridConfigData)[aRow-1]
 			configData.SetInterceptUrl(value)
 			configData.Option = consts.PIOption3
-			entity.ProxyInterceptConfigChan <- configData //发送到通道
-			if aRow == m.InterceptGridRowCount-1 && value != "" {
+			configData.Index = aRow - 1
+			entity.ProxyInterceptConfigChan <- m.InterceptGridConfigData //发送到通道
+			if aRow == m.InterceptGrid.RowCount()-1 && value != "" {
 				m.InterceptGridAdd("")
 			}
 		}
@@ -580,16 +580,16 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 	//列表中的按钮点击事件
 	m.InterceptGrid.SetOnButtonClick(func(sender lcl.IObject, aCol, aRow int32) {
 		if aCol == 2 && aRow > 0 { //删除行
-			if m.InterceptGridRowCount > 2 {
-				var before = m.InterceptGridConfigData[:aRow-1]
-				var after = m.InterceptGridConfigData[aRow:]
+			if m.InterceptGrid.RowCount() > 2 {
+				var before = (*m.InterceptGridConfigData)[:aRow-1]
+				var after = (*m.InterceptGridConfigData)[aRow:]
 				//取出删除数据
-				var configData = m.InterceptGridConfigData[aRow-1]
-				configData.Option = consts.PIOption2
-				configData.Index = aRow - 1
-				entity.ProxyInterceptConfigChan <- configData //发送到通道
-				m.InterceptGridConfigData = append(before, after...)
-				m.InterceptGridRowCount--
+				//var configData = m.InterceptGridConfigData[aRow-1]
+				//configData.Option = consts.PIOption2
+				//configData.Index = aRow - 1
+				*m.InterceptGridConfigData = append(before, after...)
+				entity.ProxyInterceptConfigChan <- m.InterceptGridConfigData //发送到通道
+				//m.InterceptGridRowCount--
 				m.InterceptGrid.DeleteRow(aRow)
 			}
 		}
@@ -598,14 +598,14 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 	m.InterceptGrid.SetOnCheckboxToggled(func(sender lcl.IObject, aCol, aRow int32, aState types.TCheckBoxState) {
 		if aCol == 0 && aRow > 0 {
 			var checked = aState == types.CbChecked
-			configData := m.InterceptGridConfigData[aRow-1]
+			configData := (*m.InterceptGridConfigData)[aRow-1]
 			configData.Option = consts.PIOption3
 			configData.SetEnable(checked)
-			entity.ProxyInterceptConfigChan <- configData //发送到通道
+			entity.ProxyInterceptConfigChan <- m.InterceptGridConfigData //发送到通道
 		}
 	})
 	m.InterceptGridHead()
-	m.InterceptGrid.SetRowCount(m.InterceptGridRowCount)
+	m.InterceptGrid.SetRowCount(1)
 	m.InterceptGridAdd("")
 }
 
@@ -613,13 +613,14 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 func (m *ProxyInterceptSettingPanel) InterceptGridAdd(URL string) {
 	lcl.ThreadSync(func() {
 		m.InterceptGridConfigDataAdd(URL)
+		var count = m.InterceptGrid.RowCount()
 		//在指定位置播放一行
-		m.InterceptGrid.InsertColRow(false, m.InterceptGridRowCount)
-		m.InterceptGrid.SetCells(0, m.InterceptGridRowCount, "1")
-		m.InterceptGrid.SetCells(1, m.InterceptGridRowCount, URL)
-		m.InterceptGrid.SetCells(2, m.InterceptGridRowCount, "删除")
-		m.InterceptGridRowCount++
-		m.InterceptGrid.SetRowCount(m.InterceptGridRowCount)
+		m.InterceptGrid.InsertColRow(false, count)
+		m.InterceptGrid.SetCells(0, count, "1")
+		m.InterceptGrid.SetCells(1, count, URL)
+		m.InterceptGrid.SetCells(2, count, "删除")
+		//m.InterceptGridRowCount++
+		m.InterceptGrid.SetRowCount(count + 1)
 	})
 }
 
@@ -629,8 +630,8 @@ func (m *ProxyInterceptSettingPanel) InterceptGridConfigDataAdd(URL string) {
 	configData.SetEnable(true)
 	configData.SetInterceptUrl(URL)
 	configData.Option = consts.PIOption1
-	entity.ProxyInterceptConfigChan <- configData //发送到通道
-	m.InterceptGridConfigData = append(m.InterceptGridConfigData, configData)
+	*m.InterceptGridConfigData = append(*m.InterceptGridConfigData, configData)
+	entity.ProxyInterceptConfigChan <- m.InterceptGridConfigData //发送到通道
 }
 
 //请求拦截参数表格头
@@ -752,7 +753,7 @@ func (m *ProxyInterceptPanel) initUI() {
 func (m *ProxyInterceptPanel) interceptQueue(proxyDetail *entity.ProxyDetail) {
 	if proxyDetail != nil && proxyDetail.IsAddTaskQueue {
 		//先添加到队列
-		fmt.Println("向队列添加")
+		//fmt.Println("向队列添加")
 		m.InterceptQueue.Push(proxyDetail)
 	}
 	m.mutex.Lock()
@@ -771,7 +772,7 @@ func (m *ProxyInterceptPanel) handlerInterceptQueue() {
 	//取出一个
 	if value, err := m.InterceptQueue.Pop(); err == nil {
 		m.InterceptQueueProxyDetail = value.(*entity.ProxyDetail)
-		fmt.Println("队列剩余", m.InterceptQueue.Len(), "当前处理", m.InterceptQueueProxyDetail.TargetUrl)
+		//fmt.Println("队列剩余", m.InterceptQueue.Len(), "当前处理", m.InterceptQueueProxyDetail.TargetUrl)
 		//自动处理拦截队列内容 一次只处理一个
 		if m.InterceptQueueProxyDetail.State == consts.P2 { //请求处理
 			m.updateRequestUI(m.InterceptQueueProxyDetail)
