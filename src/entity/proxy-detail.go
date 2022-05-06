@@ -22,16 +22,16 @@ type ProxyLogsGridColStyle struct {
 type ProxyDetail struct {
 	Error                error               `json:"-"`
 	State                consts.ProxyFlow    `json:"-"`
-	StateCode            int                 `json:"state_code"`
 	ID                   int32               `json:"-"`
+	ProxyInterceptSignal chan int32          `json:"-"` //代理拦截产生的信号，数字标记状态 10:开始请求拦截 11:结束请求拦截， 20:开始响应拦截 21:结束响应拦截
+	IsAddTaskQueue       bool                `json:"-"` //是否添加到任务队列 ，只有在初始请求时第一次添加 true 添加
+	StateCode            int                 `json:"state_code"`
 	Method               string              `json:"method"`
 	SourceUrl            string              `json:"source_url"`
 	TargetUrl            string              `json:"target_url"`
 	Host                 string              `json:"host"`
 	Request              ProxyRequestDetail  `json:"request"`
 	Response             ProxyResponseDetail `json:"response"`
-	ProxyInterceptSignal chan int32          `json:"-"` //代理拦截产生的信号，数字标记状态 10:开始请求拦截 11:结束请求拦截， 20:开始响应拦截 21:结束响应拦截
-	IsAddTaskQueue       bool                `json:"-"` //是否添加到任务队列 ，只有在初始请求时第一次添加 true 添加
 }
 
 type ProxyRequestDetail struct {

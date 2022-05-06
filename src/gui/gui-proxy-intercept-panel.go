@@ -569,8 +569,8 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 		}
 	})
 	m.OnOffBtn.SetOnClick(func(sender lcl.IObject) {
-		entity.ProxyInterceptEnable = !entity.ProxyInterceptEnable
-		if entity.ProxyInterceptEnable {
+		entity.ProxyInterceptConfigEnable = !entity.ProxyInterceptConfigEnable
+		if entity.ProxyInterceptConfigEnable {
 			m.OnOffBtn.Picture().LoadFromFSFile("resources/btn-on.png")
 		} else {
 			m.OnOffBtn.Picture().LoadFromFSFile("resources/btn-off.png")

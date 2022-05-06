@@ -71,13 +71,54 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 			Response:             entity.ProxyResponseDetail{},
 			ProxyInterceptSignal: make(chan int32),
 		}
+		//读取请求体内容
 		buf := new(bytes.Buffer)
 		wi, err = buf.ReadFrom(r.Body)
 		if err == nil {
+			//设置数据到 proxyDetailGridData
 			proxyDetailGridData.Request.Body = buf.String()
 			proxyDetailGridData.Request.Header = r.Header
 			proxyDetailGridData.Request.Size = wi
+			proxyDetailGridData.State = consts.P2
+			//发送数据到 列表展示
+			entity.ProxyDetailGridChan <- proxyDetailGridData
+
+			//开启拦截配置
+			if entity.ProxyInterceptConfigEnable {
+				//判断发送请求是否被拦截
+				var pic *entity.ProxyInterceptConfig
+				for _, pic = range *interceptConfig {
+					if pic.Enable() && strings.TrimSpace(pic.InterceptUrl()) != "" {
+						//当前地址被拦截
+						isInter = strings.Contains(proxyAddr.targetUrl, pic.InterceptUrl())
+						if isInter {
+							break
+						}
+					}
+				}
+				//此处将会得到被拦截的请求修改的信息包括：请求参数、头，体、cookie等，体现在 SIGNAL10 之后
+				if isInter && pic != nil {
+					//添加到队列准备-然后等待通知信号继续处理
+					entity.ProxyFlowInterceptChan <- proxyDetailGridData
+					//等待继续处理通知信号 01, 所有后面被拦截的都会阻塞在这里等待通知
+					signal = <-proxyDetailGridData.ProxyInterceptSignal
+					if signal != consts.SIGNAL01 {
+						fmt.Println("程序混乱 signal 信号不正确,应为 01, 实际值", signal)
+					}
+					//发送信号触发request拦截 10
+					proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL10
+					//等待触发拦截结果 11
+					signal = <-proxyDetailGridData.ProxyInterceptSignal
+					if signal != consts.SIGNAL11 {
+						fmt.Println("程序混乱 signal 信号不正确,应为 11, 实际值", signal)
+					}
+					//fmt.Println("signal", signal)
+				}
+			}
+			//创建新的代理请求对象
 			request, err = http.NewRequest(r.Method, proxyAddr.targetUrl, buf)
+			//之后的操作都不向任务列队中添加
+			proxyDetailGridData.IsAddTaskQueue = false
 		}
 	} else {
 		request, err = http.NewRequest(r.Method, proxyAddr.targetUrl, r.Body)
@@ -94,56 +135,8 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//头设置
-	//request.Host = r.Host
-	for k, v := range r.Header {
-		for _, vs := range v {
-			request.Header.Add(k, vs)
-		}
-	}
+	updateProxyRequestHeader(request, r, proxyDetailGridData)
 
-	//发起代理请求
-	//启用代理详情 记录 详情 请求
-	if proxyDetailGridData != nil {
-		proxyDetailGridData.State = consts.P2
-		entity.ProxyDetailGridChan <- proxyDetailGridData
-	}
-	//开启拦截
-	if entity.ProxyInterceptEnable {
-		//没啥问题 判断是否为发送请求
-		if proxyDetailGridData != nil && proxyDetailGridData.State == consts.P2 {
-			var pic *entity.ProxyInterceptConfig
-			for _, pic = range *interceptConfig {
-				if pic.Enable() && strings.TrimSpace(pic.InterceptUrl()) != "" {
-					//判断当前地址是被拦截
-					isInter = strings.Contains(proxyAddr.targetUrl, pic.InterceptUrl())
-					if isInter {
-						break
-					}
-				}
-			}
-			//请求地址拦截
-			if isInter && pic != nil {
-				//添加到队列准备-然后等待通知信号继续处理
-				entity.ProxyFlowInterceptChan <- proxyDetailGridData
-				//等待继续处理通知信号 01, 所有后面被拦截的都会阻塞在这里等待通知
-				signal = <-proxyDetailGridData.ProxyInterceptSignal
-				if signal != consts.SIGNAL01 {
-					fmt.Println("程序混乱 signal 信号不正确,应为 01, 实际值", signal)
-				}
-				proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL10 //发送信号触发request拦截 10
-				signal = <-proxyDetailGridData.ProxyInterceptSignal         //等待触发拦截结果 11
-				if signal != consts.SIGNAL11 {
-					fmt.Println("程序混乱 signal 信号不正确,应为 11, 实际值", signal)
-				}
-				//fmt.Println("signal", signal)
-			}
-		}
-	}
-	if proxyDetailGridData != nil {
-		//之后的操作都不向列队中添加
-		proxyDetailGridData.IsAddTaskQueue = false
-	}
 	response, err = cli.Do(request)
 	if err != nil {
 		entity.PutLogsProxyTime(err.Error())
@@ -184,7 +177,7 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 				proxyDetailGridData.StateCode = response.StatusCode
 				entity.ProxyDetailGridChan <- proxyDetailGridData
 				//响应成功
-				if isInter && entity.ProxyInterceptEnable {
+				if isInter && entity.ProxyInterceptConfigEnable {
 					entity.ProxyFlowInterceptChan <- proxyDetailGridData
 					proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL20
 					signal := <-proxyDetailGridData.ProxyInterceptSignal //等待触发拦截结果 21
@@ -222,6 +215,31 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	if isInter && proxyDetailGridData != nil {
 		proxyDetailGridData.ProxyInterceptSignal <- consts.SIGNAL30
 	}
+}
+
+//修改代理请求
+func updateProxyRequestHeader(newRequest *http.Request, oldRequest *http.Request, proxyDetailGridData *entity.ProxyDetail) {
+	//request.Host = r.Host
+	//nil 未开启代理
+	if proxyDetailGridData == nil {
+		for k, v := range oldRequest.Header {
+			for _, vs := range v {
+				newRequest.Header.Add(k, vs)
+			}
+		}
+	} else {
+		// 开启代理，使用代理UI界面修改后的数据
+		for k, v := range proxyDetailGridData.Request.Header {
+			for _, vs := range v {
+				newRequest.Header.Add(k, vs)
+			}
+		}
+	}
+}
+
+//修改代理响应
+func updateProxyResponse(proxyDetailGridData *entity.ProxyDetail) {
+
 }
 
 type proxyAddr struct {
