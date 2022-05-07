@@ -1,5 +1,5 @@
 {
-  "root": "sites",
+  "root": "E:\\SWT\\dam-web\\datablau-web\\dist\\",
   "server": {
     "ip": "0.0.0.0",
     "port": "8086"

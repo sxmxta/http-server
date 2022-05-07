@@ -188,13 +188,13 @@ func (m *TGUIForm) proxyGrid() {
 		}
 	})
 	pm.Items().Add(item)
-	//item = lcl.NewMenuItem(m.proxyLogsGrid)
-	//item.SetCaption("清空")
-	////item.SetShortCutFromString("")
-	//item.SetOnClick(func(lcl.IObject) {
-	//	m.proxyLogsGridClear()
-	//})
-	//pm.Items().Add(item)
+	item = lcl.NewMenuItem(m.proxyLogsGrid)
+	item.SetCaption("清空")
+	//item.SetShortCutFromString("")
+	item.SetOnClick(func(lcl.IObject) {
+		m.proxyLogsGridClear()
+	})
+	pm.Items().Add(item)
 
 	//添加到右键菜单
 	m.proxyLogsGrid.SetPopupMenu(pm)
@@ -241,14 +241,14 @@ func (m *TGUIForm) proxyLogsGridHead() {
 var (
 	logGridUrlAddPICValue string
 	logGridSelCol2Value   string      //选中表格第二列的值
-	logGridSelDetailKey   int32  = -1 //选中表格行下标
+	logGridSelDetailKey   int32  = -1 //选中表格行下标 实际的ProxyDetails map对应的key
 	logGridInsertRow      int32  = 1  //在第指定行插入
 )
 
 //代理日志grid添加一行
 func (m *TGUIForm) proxyLogsGridAdd(proxyDetail *entity.ProxyDetail) {
-	m.proxyLogsGridCountRow = proxyDetail.ID + 1
 	lcl.ThreadSync(func() {
+		m.proxyLogsGridCountRow = proxyDetail.ID + 1
 		//在指定行插入行
 		m.proxyLogsGrid.InsertColRow(false, logGridInsertRow)
 		//给指定行的列设置值
@@ -263,12 +263,16 @@ func (m *TGUIForm) proxyLogsGridAdd(proxyDetail *entity.ProxyDetail) {
 
 //代理日志grid清除-还未完善
 func (m *TGUIForm) proxyLogsGridClear() {
-	m.proxyLogsGrid.Clear()
+	entity.ID.Reset()
+	logGridUrlAddPICValue = ""
 	logGridSelCol2Value = ""    //选中列的值
-	logGridSelDetailKey = -1    //实际的ProxyDetails map对应的key
+	logGridSelDetailKey = -1    //选中表格行下标 实际的ProxyDetails map对应的key
 	m.proxyLogsGridCountRow = 1 //总行数
+	m.ProxyDetails = make(map[int32]*entity.ProxyDetail)
+	m.ProxyLogsGridRowStyle = make(map[int32]*entity.ProxyLogsGridRowStyle)
+	m.proxyLogsGrid.Clear()
+	m.proxyLogsGrid.SetRow(m.proxyLogsGridCountRow)
 	m.proxyLogsGrid.SetRowCount(m.proxyLogsGridCountRow)
-	//m.proxyLogsGridHead()
 }
 
 //设置代理详情锁

@@ -12,10 +12,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync/atomic"
 )
 
-var id int32
 var jar, _ = cookiejar.New(nil)
 var interceptConfig *[]*entity.ProxyInterceptConfig
 
@@ -52,9 +50,7 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	}
 	//启用代理详情 记录 详情 请求
 	if entity.EnableProxyDetail {
-		atomic.AddInt32(&id, 1)
-		var id = atomic.LoadInt32(&id)
-		request, proxyDetailGridData, isInter, err = handlerEnableProxy(id, proxyAddr, r)
+		request, proxyDetailGridData, isInter, err = handlerEnableProxy(entity.ID.Get(), proxyAddr, r)
 		//err = r.ParseForm()
 		//proxyDetailGridData = &entity.ProxyDetail{
 		//	ID:             id,
@@ -232,10 +228,10 @@ func handlerEnableProxy(id int32, proxyAddr *proxyAddr, r *http.Request) (reques
 		signal int32 //信号
 		wi     int64
 	)
-	err = r.ParseForm()
-	if err != nil {
-		return request, proxyDetailGridData, isInter, err
-	}
+	//err = r.ParseForm()
+	//if err != nil {
+	//	return request, proxyDetailGridData, isInter, err
+	//}
 	proxyDetailGridData = &entity.ProxyDetail{
 		ID:             id,
 		SourceUrl:      proxyAddr.sourceUrl,
