@@ -182,7 +182,6 @@ func (m *TGUIForm) proxyGrid() {
 	item.SetCaption("添加拦截")
 	item.SetShortCutFromString("Ctrl+Shift+A")
 	item.SetOnClick(func(lcl.IObject) {
-		fmt.Println(logGridUrlAddPICValue)
 		if logGridUrlAddPICValue != "" {
 			m.ProxyDetailUI.ProxyInterceptConfigPanel.ProxyInterceptSettingPanel.InterceptGridAdd(logGridUrlAddPICValue)
 		}
