@@ -880,7 +880,7 @@ func (m *ProxyInterceptPanel) updateRequestUI(proxyDetail *entity.ProxyDetail) {
 	//body - raw/json
 	m.ProxyInterceptRequestPanel.TBodyPanel.RawMemo.SetText(proxyDetail.Request.Body)
 	//form-data/x-www-form-urlencoded/binary
-	for key, form := range proxyDetail.Request.FormParams {
+	for key, form := range proxyDetail.Request.PostForm {
 		for _, p := range form {
 			m.ProxyInterceptRequestPanel.TBodyPanel.FormDataGridAdd("", key, p)
 		}

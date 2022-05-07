@@ -35,11 +35,12 @@ type ProxyDetail struct {
 }
 
 type ProxyRequestDetail struct {
-	Header     map[string][]string `json:"header"`
-	Body       string              `json:"body"`
-	URLParams  map[string][]string `json:"url_params"`
-	FormParams map[string][]string `json:"form_params"`
-	Size       int64               `json:"size"`
+	Header    map[string][]string `json:"header"`
+	Body      string              `json:"body"`
+	URLParams map[string][]string `json:"url_params"`
+	PostForm  map[string][]string `json:"post_form"`
+	//Form      map[string][]string `json:"form"`
+	Size int64 `json:"size"`
 }
 
 type ProxyResponseDetail struct {
