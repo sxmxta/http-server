@@ -2,8 +2,15 @@
 
 ## 介绍
 ## golang编写http静态资源服务
-## 基于lazarus lcl IU库支持界面操作
-### 功能 
+## 基于lazarus [LCL库](https://gitee.com/snxamdf/golcl) IU库支持界面操作 
+### 理论上支持跨平台，目前还未完全实现
+### 使用
+```text
+    gitee 和 github 同步
+    gitee  : git clone https://gitee.com/snxamdf/http-server
+    github : git clone https://github.com/yhylovezl/http-server
+```
+### 功能
 ```text
     1. 支持纯静态资源服务
     2. 基于源码开发简单的后台服务
