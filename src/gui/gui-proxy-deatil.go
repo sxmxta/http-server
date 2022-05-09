@@ -28,14 +28,14 @@ func resetPVars() {
 }
 
 //代理Panel
-type ProxyDetailPanel struct {
+type RightPanelUI struct {
 	TPanel                    *lcl.TPanel
 	RequestDetailViewPanel    *RequestDetailViewPanel //代理详情查看 Sheet Panel
 	ProxyInterceptConfigPanel *ProxyInterceptPanel    //代理拦截配置 Sheet Panel
 }
 
 //初始化子组件对象
-func (m *ProxyDetailPanel) init() {
+func (m *RightPanelUI) init() {
 	m.RequestDetailViewPanel = &RequestDetailViewPanel{}
 	m.ProxyInterceptConfigPanel = &ProxyInterceptPanel{
 		InterceptQueue:              common.NewQueue(),
@@ -46,34 +46,29 @@ func (m *ProxyDetailPanel) init() {
 	}
 }
 
-func (m *TGUIForm) proxyDetailPanelInit() {
-	m.ProxyDetailUI = &ProxyDetailPanel{}
-	m.ProxyDetailUI.TPanel = lcl.NewPanel(m)
-	m.ProxyDetailUI.TPanel.SetParent(m)
-	m.ProxyDetailUI.TPanel.SetBounds(uiWidth, 0, uiWidthEx, uiHeight+uiHeightEx)
-	m.ProxyDetailUI.TPanel.SetBevelOuter(types.BvNone)
-	m.ProxyDetailUI.TPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
-
+func (m *TGUIForm) initRightUI() {
+	m.rightPanel = &RightPanelUI{}
+	m.rightPanel.TPanel = lcl.NewPanel(m)
+	m.rightPanel.TPanel.SetParent(m)
+	m.rightPanel.TPanel.SetBevelOuter(types.BvNone)
+	m.rightPanel.TPanel.SetBorderStyle(types.BsNone)
+	m.rightPanel.TPanel.SetAlign(types.AlClient)
+	//m.rightPanel.TPanel.SetColor(colors.ClRed)
 	//初始化子组件对象
-	m.ProxyDetailUI.init()
+	m.rightPanel.init()
 
 	//请求响应tabs标签
-	resetPVars()
-	pLeft = 0
-	pTop = 0
-	pWidth = m.ProxyDetailUI.TPanel.Width()
-	pHeight = m.ProxyDetailUI.TPanel.Height()
-	m.ProxyDetailUI.proxyPages(pLeft, pTop, pWidth, pHeight)
+	m.rightPanel.proxyPageUI()
 
 	//代理详情查看PanelUI
-	m.ProxyDetailUI.RequestDetailViewPanel.initUI()
+	m.rightPanel.RequestDetailViewPanel.initUI()
 	//代理详情查看PanelUI
-	m.ProxyDetailUI.ProxyInterceptConfigPanel.initUI()
+	m.rightPanel.ProxyInterceptConfigPanel.initUI()
 
 }
 
 //UI右侧请求响应sheet Page
-func (m *ProxyDetailPanel) proxyPages(left, top, width, height int32) {
+func (m *RightPanelUI) proxyPageUI() {
 	pagePanel := lcl.NewPanel(m.TPanel) //创建一个tabs的父组件，可以根据客户端变更大小
 	pagePanel.SetParent(m.TPanel)
 	pagePanel.SetAlign(types.AlClient)

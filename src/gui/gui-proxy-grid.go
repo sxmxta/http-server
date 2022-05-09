@@ -13,14 +13,14 @@ import (
 )
 
 func (m *TGUIForm) proxyGrid() {
-	//代理
-	m.proxyLogsGrid = lcl.NewStringGrid(m)
-	m.proxyLogsGrid.SetParent(m)
-	m.proxyLogsGrid.SetScrollBars(types.SsAutoBoth)
+	//代理列表
 	var mh = m.Height()
 	mh = mh - uiHeight - 20
+	m.proxyLogsGrid = lcl.NewStringGrid(m.leftPanel)
+	m.proxyLogsGrid.SetParent(m.leftPanel)
+	m.proxyLogsGrid.SetScrollBars(types.SsAutoBoth)
 	m.proxyLogsGrid.SetBounds(0, uiHeight, uiWidth, mh)
-	//m.proxyLogsGrid.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop))
+	m.proxyLogsGrid.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 	// 表格边框样式，这里设置为没有边框
 	m.proxyLogsGrid.SetBorderStyle(types.BsNone)
 	m.proxyLogsGrid.SetColor(colors.ClWhite)
@@ -37,10 +37,7 @@ func (m *TGUIForm) proxyGrid() {
 	m.proxyLogsGrid.SetFixedColor(colors.ClGreen)
 	// 设置flat后可以用这个修改fixed区域的表格线
 	//m.proxyLogsGrid.SetFixedGridLineColor(colors.ClRed)
-	//m.proxyLogsGrid.SetAnchors(types.NewSet(types.AkBottom, types.AkRight))
 	//m.proxyLogsGrid.SetVisible(false)
-	//绘制表格头
-	m.proxyLogsGridHead()
 	//表格背景色
 	var bgColor = m.proxyLogsGrid.Color()
 	//表格绘制事件
@@ -151,6 +148,8 @@ func (m *TGUIForm) proxyGrid() {
 			m.selectGridUpdate()
 		}
 	})
+	//绘制表格头
+	m.proxyLogsGridHead()
 	//设置初始行数 1
 	m.proxyLogsGrid.SetRowCount(m.proxyLogsGridCountRow)
 
@@ -183,7 +182,7 @@ func (m *TGUIForm) proxyGrid() {
 	item.SetShortCutFromString("Ctrl+Shift+A")
 	item.SetOnClick(func(lcl.IObject) {
 		if logGridUrlAddPICValue != "" {
-			m.ProxyDetailUI.ProxyInterceptConfigPanel.ProxyInterceptSettingPanel.InterceptGridAdd(logGridUrlAddPICValue)
+			m.rightPanel.ProxyInterceptConfigPanel.ProxyInterceptSettingPanel.InterceptGridAdd(logGridUrlAddPICValue)
 		}
 	})
 	pm.Items().Add(item)
@@ -202,8 +201,8 @@ func (m *TGUIForm) proxyGrid() {
 //更新选中的表格数据到右侧
 func (m *TGUIForm) selectGridUpdate() {
 	if rowData, ok := m.ProxyDetails[logGridSelDetailKey]; ok {
-		m.ProxyDetailUI.RequestDetailViewPanel.updateRequestSheet(rowData)
-		m.ProxyDetailUI.RequestDetailViewPanel.updateResponseSheet(rowData)
+		m.rightPanel.RequestDetailViewPanel.updateRequestSheet(rowData)
+		m.rightPanel.RequestDetailViewPanel.updateResponseSheet(rowData)
 	}
 }
 
@@ -217,11 +216,12 @@ func (m *TGUIForm) proxyLogsGridHead() {
 	colNo.SetReadOnly(true)
 	//col1.SetReadOnly(true)
 
-	var colAddr = m.proxyLogsGrid.Columns().Add()
-	colAddr.SetWidth(uiWidth - 200)
-	colAddr.Title().SetCaption("地址 - (右键菜单复制)")
-	colAddr.Title().SetAlignment(types.TaCenter)
-	colAddr.SetReadOnly(true)
+	m.proxyLogsGridColAddr = m.proxyLogsGrid.Columns().Add()
+	m.proxyLogsGridColAddr.SetWidth(uiWidth - 200)
+	m.proxyLogsGridColAddr.Title().SetCaption("地址 - (右键菜单复制)")
+	m.proxyLogsGridColAddr.Title().SetAlignment(types.TaCenter)
+	//colAddr.SetAlignment()
+	m.proxyLogsGridColAddr.SetReadOnly(true)
 
 	var colState = m.proxyLogsGrid.Columns().Add()
 	colState.SetWidth(60)

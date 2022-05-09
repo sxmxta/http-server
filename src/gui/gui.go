@@ -19,13 +19,16 @@ var (
 
 type TGUIForm struct {
 	*lcl.TForm
+	leftPanel               *lcl.TPanel
+	rightPanel              *RightPanelUI //代理PanelUI
+	lrSplitter              *lcl.TSplitter
 	logs                    *lcl.TRichEdit
 	proxyLogsGrid           *lcl.TStringGrid                        //代理详情列表UI
+	proxyLogsGridColAddr    *lcl.TGridColumn                        //
 	ProxyLogsGridRowStyle   map[int32]*entity.ProxyLogsGridRowStyle //每行的样式
 	proxyLogsGridCountRow   int32                                   //表格总行数
 	proxyMouseMoveIndex     int32
 	ProxyDetails            map[int32]*entity.ProxyDetail //代理详情数据集合
-	ProxyDetailUI           *ProxyDetailPanel             //代理PanelUI
 	stateBar                *lcl.TStatusBar
 	showProxyLogChkBox      *lcl.TCheckBox
 	showStaticLogChkBox     *lcl.TCheckBox
@@ -40,9 +43,24 @@ func (m *TGUIForm) OnFormCreate(sender lcl.IObject) {
 	m.SetBorderStyle(types.BsSingle)
 	m.SetWidth(uiWidth)
 	m.SetHeight(uiHeight)
+
+	m.leftPanel = lcl.NewPanel(m)
+	m.leftPanel.SetParent(m)
+	m.leftPanel.SetAlign(types.AlLeft)
+	m.leftPanel.SetWidth(uiWidth)
+
+	m.lrSplitter = lcl.NewSplitter(m)
+	m.lrSplitter.SetParent(m)
+	m.lrSplitter.SetAlign(types.AlLeft)
+	m.lrSplitter.SetWidth(3)
+	m.lrSplitter.SetLeft(uiWidth)
+	m.lrSplitter.SetName("LRSplitter")
+
 	m.ProxyDetails = make(map[int32]*entity.ProxyDetail)
 	m.proxyLogsGridCountRow = 1
 	m.ProxyLogsGridRowStyle = make(map[int32]*entity.ProxyLogsGridRowStyle)
+
+	//初始化所有实现UI
 	m.impl()
 	//数据监听 channel
 	go m.dataListen()
@@ -59,7 +77,7 @@ func (m *TGUIForm) dataListen() {
 		case proxyInterceptDetail, ok := <-entity.ProxyFlowInterceptChan:
 			if ok {
 				//添加到拦截队列任务
-				m.ProxyDetailUI.ProxyInterceptConfigPanel.interceptQueue(proxyInterceptDetail)
+				m.rightPanel.ProxyInterceptConfigPanel.interceptQueue(proxyInterceptDetail)
 			}
 		}
 	}

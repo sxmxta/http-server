@@ -111,6 +111,8 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.RequestDetailViewMemo.SetScrollBars(types.SsAutoBoth)
 	m.RequestDetailViewMemo.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.RequestDetailViewMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	m.RequestDetailViewMemo.SetBorderStyle(types.BsNone)
+
 	//response memo
 	pLeft = 0
 	pTop = 0
@@ -121,6 +123,7 @@ func (m *RequestDetailViewPanel) initUI() {
 	m.ResponseDetailViewMemo.SetScrollBars(types.SsAutoBoth)
 	m.ResponseDetailViewMemo.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.ResponseDetailViewMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
+	m.ResponseDetailViewMemo.SetBorderStyle(types.BsNone)
 }
 
 //更新请求标签UI

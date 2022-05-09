@@ -591,12 +591,8 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 				var before = (*m.InterceptGridConfigData)[:aRow-1]
 				var after = (*m.InterceptGridConfigData)[aRow:]
 				//取出删除数据
-				//var configData = m.InterceptGridConfigData[aRow-1]
-				//configData.Option = consts.PIOption2
-				//configData.Index = aRow - 1
 				*m.InterceptGridConfigData = append(before, after...)
 				entity.ProxyInterceptConfigChan <- m.InterceptGridConfigData //发送到通道
-				//m.InterceptGridRowCount--
 				m.InterceptGrid.DeleteRow(aRow)
 			}
 		}
@@ -626,7 +622,6 @@ func (m *ProxyInterceptSettingPanel) InterceptGridAdd(URL string) {
 		m.InterceptGrid.SetCells(0, count, "1")
 		m.InterceptGrid.SetCells(1, count, URL)
 		m.InterceptGrid.SetCells(2, count, "删除")
-		//m.InterceptGridRowCount++
 		m.InterceptGrid.SetRowCount(count + 1)
 	})
 }
@@ -674,7 +669,6 @@ func (m *ProxyInterceptPanel) initUI() {
 	m.interceptPageControl.SetParent(m.TPanel)
 	m.interceptPageControl.SetBounds(pLeft, pTop, pWidth, pHeight)
 	m.interceptPageControl.SetAnchors(types.NewSet(types.AkLeft, types.AkBottom, types.AkTop, types.AkRight))
-	//m.interceptPageControl.SetAlign(types.AlClient)
 
 	sheetInterReq := lcl.NewTabSheet(m.interceptPageControl) //标签页
 	sheetInterReq.SetPageControl(m.interceptPageControl)
