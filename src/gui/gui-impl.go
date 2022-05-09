@@ -192,6 +192,7 @@ func LogsColor(color int32, message string) {
 
 func clearLogs() {
 	logsLength = 0
+	GUIForm.logs.Clear()
 	GUIForm.logs.Lines().Clear()
 }
 

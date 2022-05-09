@@ -1,14 +1,18 @@
-package main
+package test
 
 import (
 	"gitee.com/snxamdf/golcl/tools/winRes"
+	"testing"
 )
 
-func main() {
+func testSyso(t *testing.T) {
 	syso()
 }
 
 func syso() {
 	newSYSO := winRes.NewSYSO()
 	newSYSO.RC()
+}
+
+func testLogs(t *testing.T) {
 }
