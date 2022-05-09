@@ -99,37 +99,37 @@ func (m *TGUIForm) initLeftUI() {
 	m.showProxyLogChkBox = lcl.NewCheckBox(m.leftPanel)
 	m.showProxyLogChkBox.SetParent(m.leftPanel)
 	m.showProxyLogChkBox.SetCaption("显示代理请求日志")
-	m.showProxyLogChkBox.SetHint("不影响服务性能")
+	m.showProxyLogChkBox.SetHint("不影响服务性能\n会增加内存消耗")
 	m.showProxyLogChkBox.SetShowHint(true)
 	m.showProxyLogChkBox.SetBounds(10, 0, 0, 0)
 	m.showProxyLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	m.showProxyLogChkBox.SetOnClick(func(sender lcl.IObject) {
 		entity.ShowProxyLog = m.showProxyLogChkBox.Checked()
 	})
-	m.showProxyLogChkBox.SetChecked(true)
-	entity.ShowProxyLog = true
+	//m.showProxyLogChkBox.SetChecked(true)
+	//entity.ShowProxyLog = true
 	//---- end 显示代理请求日志 checkbox ----
 
 	//---- begin 显示普通请求日志 checkbox ----
 	m.showStaticLogChkBox = lcl.NewCheckBox(m.leftPanel)
 	m.showStaticLogChkBox.SetParent(m.leftPanel)
 	m.showStaticLogChkBox.SetCaption("显示普通请求日志")
-	m.showStaticLogChkBox.SetHint("不影响服务性能")
+	m.showStaticLogChkBox.SetHint("不影响服务性能\n会增加内存消耗")
 	m.showStaticLogChkBox.SetShowHint(true)
 	m.showStaticLogChkBox.SetBounds(m.showProxyLogChkBox.Left()+130, 0, 0, 0)
 	m.showStaticLogChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
 	m.showStaticLogChkBox.SetOnClick(func(sender lcl.IObject) {
 		entity.ShowStaticLog = m.showStaticLogChkBox.Checked()
 	})
-	m.showStaticLogChkBox.SetChecked(true)
-	entity.ShowStaticLog = true
+	//m.showStaticLogChkBox.SetChecked(true)
+	//entity.ShowStaticLog = true
 	//---- end 显示普通请求日志 checkbox ----
 
 	//---- begin 启用代理详情 checkbox ----
 	m.enableProxyDetailChkBox = lcl.NewCheckBox(m.leftPanel)
 	m.enableProxyDetailChkBox.SetParent(m.leftPanel)
 	m.enableProxyDetailChkBox.SetCaption("启用代理跟踪详情")
-	m.enableProxyDetailChkBox.SetHint("启用该功能严重影响服务性能\n适用于调式接口")
+	m.enableProxyDetailChkBox.SetHint("严重影响服务性能\n适用于调式接口")
 	m.enableProxyDetailChkBox.SetShowHint(true)
 	m.enableProxyDetailChkBox.SetBounds(m.showStaticLogChkBox.Left()+130, 0, 0, 0)
 	m.enableProxyDetailChkBox.SetAnchors(types.NewSet(types.AkTop, types.AkLeft))
