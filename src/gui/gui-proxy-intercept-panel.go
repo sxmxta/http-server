@@ -614,6 +614,14 @@ func (m *ProxyInterceptSettingPanel) initUI() {
 
 //请求拦截参数列表添加
 func (m *ProxyInterceptSettingPanel) InterceptGridAdd(URL string) {
+	if URL != "" {
+		configData := m.InterceptGridConfigData
+		for _, igcd := range *configData {
+			if igcd.InterceptUrl() == URL {
+				return
+			}
+		}
+	}
 	lcl.ThreadSync(func() {
 		m.InterceptGridConfigDataAdd(URL)
 		var count = m.InterceptGrid.RowCount()

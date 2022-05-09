@@ -112,7 +112,7 @@ func (m *TGUIForm) proxyGrid() {
 	//})
 	//鼠标点击事件 up
 	m.proxyLogsGrid.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
-		if button == types.MbRight { //鼠标右键
+		if button == types.MbRight || button == types.MbLeft { //鼠标右键
 			var point = types.TPoint{}
 			point.X = x
 			point.Y = y
@@ -187,8 +187,7 @@ func (m *TGUIForm) proxyGrid() {
 	})
 	pm.Items().Add(item)
 	item = lcl.NewMenuItem(m.proxyLogsGrid)
-	item.SetCaption("清空")
-	//item.SetShortCutFromString("")
+	item.SetCaption("清空列表")
 	item.SetOnClick(func(lcl.IObject) {
 		m.proxyLogsGridClear()
 	})
