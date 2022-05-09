@@ -2,6 +2,7 @@
 
 ## 介绍
 ## golang编写http静态资源服务
+## 基于lazarus lcl IU库支持界面操作
 ### 功能 
 ```text
     1. 支持纯静态资源服务
@@ -12,3 +13,10 @@
         5.1 代理详情：可查看请求/响应头、参数、体等数据
         5.2 拦截：请求/响应头、参数、体等修改
 ```
+### 以下图片展示
+![图片](https://gitee.com/snxamdf/images/raw/master/http-server/proxy-ui-00.png)
+![图片](https://gitee.com/snxamdf/images/raw/master/http-server/proxy-ui-01.png)
+![图片](https://gitee.com/snxamdf/images/raw/master/http-server/proxy-ui-02.png)
+![图片](https://gitee.com/snxamdf/images/raw/master/http-server/proxy-ui-03.png)
+![图片](https://gitee.com/snxamdf/images/raw/master/http-server/proxy-ui-04.png)
+![图片](https://gitee.com/snxamdf/images/raw/master/http-server/proxy-ui-05.png)
