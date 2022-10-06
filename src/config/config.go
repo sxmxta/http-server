@@ -1,9 +1,10 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/lcl/types/colors"
 	"io/ioutil"
 )
 
@@ -19,8 +20,13 @@ type Config struct {
 }
 
 type Server struct {
-	IP   string `json:"ip"`
-	PORT string `json:"port"`
+	IP          string `json:"ip"`
+	PORT        string `json:"port"`
+	SSL         bool   `json:"ssl"`
+	SSLCert     string `json:"sslCert"`
+	SSLKey      string `json:"sslKey"`
+	SSLHttp     bool   `json:"sslHttp"`
+	SSLHttpPort int    `json:"sslHttpPort"`
 }
 
 type Proxy struct {
@@ -70,6 +76,7 @@ func init() {
 		entity.PutColorMessage(colors.ClRed, "读取配置文件错误：", err.Error())
 		return
 	}
+	byt = bytes.TrimPrefix(byt, []byte("\xef\xbb\xbf"))
 	err = json.Unmarshal(byt, Cfg)
 	if err != nil {
 		entity.AppInitSuccess = false

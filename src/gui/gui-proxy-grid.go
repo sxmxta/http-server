@@ -3,10 +3,10 @@ package gui
 import (
 	"encoding/json"
 	"fmt"
-	"gitee.com/snxamdf/golcl/lcl"
-	"gitee.com/snxamdf/golcl/lcl/types"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/lcl"
+	"github.com/energye/golcl/lcl/types"
+	"github.com/energye/golcl/lcl/types/colors"
 	"net/url"
 	"strings"
 	"sync"
@@ -245,7 +245,7 @@ var (
 
 //代理日志grid添加一行
 func (m *TGUIForm) proxyLogsGridAdd(proxyDetail *entity.ProxyDetail) {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		m.proxyLogsGridCountRow = proxyDetail.ID + 1
 		//在指定行插入行
 		m.proxyLogsGrid.InsertColRow(false, logGridInsertRow)

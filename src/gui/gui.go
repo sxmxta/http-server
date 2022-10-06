@@ -1,9 +1,9 @@
 package gui
 
 import (
-	"gitee.com/snxamdf/golcl/lcl"
-	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/lcl"
+	"github.com/energye/golcl/lcl/types"
 )
 
 var GUIForm = &TGUIForm{}

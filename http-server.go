@@ -2,12 +2,12 @@ package main
 
 import (
 	"embed"
-	"gitee.com/snxamdf/golcl/inits"
-	"gitee.com/snxamdf/golcl/lcl"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/entity"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"gitee.com/snxamdf/http-server/src/server"
+	"github.com/energye/golcl/inits"
+	"github.com/energye/golcl/lcl"
+	"github.com/energye/golcl/lcl/types/colors"
 )
 
 //go:embed resources

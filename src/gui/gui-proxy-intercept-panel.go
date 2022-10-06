@@ -1,12 +1,12 @@
 package gui
 
 import (
-	"gitee.com/snxamdf/golcl/lcl"
-	"gitee.com/snxamdf/golcl/lcl/types"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/consts"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/lcl"
+	"github.com/energye/golcl/lcl/types"
+	"github.com/energye/golcl/lcl/types/colors"
 	"path/filepath"
 	"sync"
 )
@@ -253,7 +253,7 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 			m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Exclude(types.GoEditing))
 			//解决同步到列表问题
 			common.NewDebounce(10).Start(func() { //是个线程操作
-				lcl.ThreadSync(func() {
+				lcl.QueueAsyncCall(func(id int) {
 					if value == "Text" {
 						m.FormDataGrid.SetCells(3, aRow, "---")
 						row.FileValue = ""
@@ -304,7 +304,7 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 				m.FormDataGrid.SetOptions(m.FormDataGrid.Options().Exclude(types.GoEditing))
 				//解决同步到列表问题
 				common.NewDebounce(1).Start(func() { //是个线程操作
-					lcl.ThreadSync(func() { //需要主线程同步
+					lcl.QueueAsyncCall(func(id int) { //需要主线程同步
 						if m.FormDataGridOpenFile.Execute() {
 							var filePath = m.FormDataGridOpenFile.FileName()
 							row.FileValue = filePath
@@ -336,7 +336,7 @@ func (m *ProxyInterceptRequestBodyPanel) initUI() {
 
 //清空Body表格
 func (m *ProxyInterceptRequestBodyPanel) ClearFormDataGrid() {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		m.FormDataGrid.Clear()
 		m.FormDataGridRowCount = 1
 		m.FormDataGrid.SetRow(m.FormDataGridRowCount)
@@ -346,7 +346,7 @@ func (m *ProxyInterceptRequestBodyPanel) ClearFormDataGrid() {
 
 //请求Body表格添加
 func (m *ProxyInterceptRequestBodyPanel) FormDataGridAdd(t, key, value string) {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		var n = &entity.FormDataGridList{
 			Type: t,
 			Key:  key,
@@ -411,7 +411,7 @@ func (m *ProxyInterceptRequestBodyPanel) bodyRdoCheckClick(t int) {
 
 //请求拦截头添加
 func (m *ProxyInterceptRequestPanel) HeaderGridAdd(key, value string) {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		//在指定位置播放一行
 		m.HeadersGrid.InsertColRow(false, m.HeadersGridRowCount)
 		m.HeadersGrid.SetCells(0, m.HeadersGridRowCount, "1")
@@ -425,7 +425,7 @@ func (m *ProxyInterceptRequestPanel) HeaderGridAdd(key, value string) {
 
 //清空头列表
 func (m *ProxyInterceptRequestPanel) ClearHeaderGrid() {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		m.HeadersGrid.Clear()
 		m.HeadersGridRowCount = 1
 		m.HeadersGrid.SetRow(m.HeadersGridRowCount)
@@ -462,7 +462,7 @@ func (m *ProxyInterceptRequestPanel) HeaderGridHead() {
 
 //清空参数表格
 func (m *ProxyInterceptRequestPanel) ClearQueryParamsGrid() {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		m.ParamsGrid.Clear()
 		m.ParamsGridRowCount = 1
 		m.ParamsGrid.SetRow(m.ParamsGridRowCount)
@@ -472,7 +472,7 @@ func (m *ProxyInterceptRequestPanel) ClearQueryParamsGrid() {
 
 //请求拦截参数列表添加
 func (m *ProxyInterceptRequestPanel) QueryParamsGridAdd(key, value string) {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		//在指定位置播放一行
 		m.ParamsGrid.InsertColRow(false, m.ParamsGridRowCount)
 		m.ParamsGrid.SetCells(0, m.ParamsGridRowCount, "1")
@@ -622,7 +622,7 @@ func (m *ProxyInterceptSettingPanel) InterceptGridAdd(URL string) {
 			}
 		}
 	}
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		m.InterceptGridConfigDataAdd(URL)
 		var count = m.InterceptGrid.RowCount()
 		//在指定位置播放一行
@@ -848,14 +848,14 @@ func (m *ProxyInterceptPanel) handlerInterceptQueue() {
 
 //更新状态UI
 func (m *ProxyInterceptPanel) stateOkBtnSetVisible(b bool) {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		m.StateOkBtn.SetVisible(b)
 	})
 }
 
 //更新状态UI
 func (m *ProxyInterceptPanel) updateStateUI(color types.TColor, caption string) {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		m.StateLabel.Font().SetColor(color)
 		m.StateLabel.SetCaption(caption)
 	})

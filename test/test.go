@@ -1,7 +1,7 @@
 package test
 
 import (
-	"gitee.com/snxamdf/golcl/tools/winRes"
+	"github.com/energye/golcl/tools/winRes"
 	"testing"
 )
 

@@ -1,10 +1,10 @@
 package gui
 
 import (
-	"gitee.com/snxamdf/golcl/lcl"
-	"gitee.com/snxamdf/golcl/lcl/types"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/lcl"
+	"github.com/energye/golcl/lcl/types"
 )
 
 //详情使用的基础变量

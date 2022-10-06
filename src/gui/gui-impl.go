@@ -1,10 +1,10 @@
 package gui
 
 import (
-	"gitee.com/snxamdf/golcl/lcl"
-	"gitee.com/snxamdf/golcl/lcl/types"
-	"gitee.com/snxamdf/golcl/lcl/types/messages"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/lcl"
+	"github.com/energye/golcl/lcl/types"
+	"github.com/energye/golcl/lcl/types/messages"
 	"strings"
 	"time"
 )
@@ -175,7 +175,7 @@ func (m *TGUIForm) showHIde() {
 }
 
 func LogsColor(color int32, message string) {
-	lcl.ThreadSync(func() {
+	lcl.QueueAsyncCall(func(id int) {
 		if color >= 0 {
 			GUIForm.logs.SetSelStart(GUIForm.logs.GetTextLen())
 			GUIForm.logs.SetSelLength(int32(strings.Count(message, "")))

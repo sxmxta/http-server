@@ -3,11 +3,11 @@ package server
 import (
 	"bytes"
 	"fmt"
-	"gitee.com/snxamdf/golcl/emfs"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/emfs"
+	"github.com/energye/golcl/lcl/types/colors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -140,7 +140,20 @@ func StartHttpServer() error {
 	entity.PutMessage("Http Server 启动时间: " + msg)
 	entity.PutMessage(fmt.Sprintf("%v: %v", "Http Server Listen:", addr))
 	entity.PutMessage("Http Server Proxy: ", string(config.Cfg.Proxy.ToJSON()))
-	err := http.ListenAndServe(addr, mux)
+	var err error
+	if config.Cfg.Server.SSL {
+		if !common.PathExists(config.Cfg.Server.SSLCert) {
+			entity.PutMessage("SSL证书Cert不存在" + config.Cfg.Server.SSLCert)
+			return err
+		}
+		if !common.PathExists(config.Cfg.Server.SSLKey) {
+			entity.PutMessage("SSL证书Key不存在", config.Cfg.Server.SSLKey)
+			return err
+		}
+		err = http.ListenAndServeTLS(addr, config.Cfg.Server.SSLCert, config.Cfg.Server.SSLKey, mux)
+	} else {
+		err = http.ListenAndServe(addr, mux)
+	}
 	if err != nil {
 		entity.PutMessage("Http Server 启动失败")
 		entity.PutColorMessage(colors.ClRed, err.Error())

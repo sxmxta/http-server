@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/entity"
+	"github.com/energye/golcl/lcl/types/colors"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

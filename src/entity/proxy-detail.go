@@ -1,9 +1,9 @@
 package entity
 
 import (
-	"gitee.com/snxamdf/golcl/lcl/types"
-	"gitee.com/snxamdf/golcl/lcl/types/colors"
 	"gitee.com/snxamdf/http-server/src/consts"
+	"github.com/energye/golcl/lcl/types"
+	"github.com/energye/golcl/lcl/types/colors"
 )
 
 type ProxyLogsGridRowStyle struct {
