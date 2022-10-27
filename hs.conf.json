@@ -1,22 +1,30 @@
 {
-  "root": "E:\\SWT\\dam-web\\datablau-web\\dist\\",
+  "root": "D:\\app.exe\\http-server\\sites\\",
   "server": {
     "ip": "0.0.0.0",
-    "port": "8086",
-    "ssl": true,
-    "sslCert": "E:\\SWT\\gopath\\src\\http-server\\ssl\\energy.yanghy.cn.crt",
-    "sslKey": "E:\\SWT\\gopath\\src\\http-server\\ssl\\energy.yanghy.cn.key"
-  },
-  "sqlite3": {
-    "path": "db/",
-    "name": "mir"
+    "port": "8086"
   },
   "proxy": {
-    "/api/": {
-      "target": "http://192.168.0.100:9762"
-    },
     "/dam": {
       "target": "http://192.168.1.150:58080"
+    },
+    "/gateway": {
+      "target": "http://192.168.1.150:58080"
+    },
+    "/domain/": {
+      "target": "http://192.168.1.150:58080"
+    },
+    "/user/": {
+      "target": "http://192.168.1.150:58080"
+    },
+    "/workflow": {
+      "target": "http://192.168.1.150:18085"
+    },
+    "/mock": {
+      "target": "http://192.168.1.150:18085",
+      "rewrite": {
+        "^/mock/": "/test/"
+      }
     }
   }
 }
