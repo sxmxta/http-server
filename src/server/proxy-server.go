@@ -164,12 +164,14 @@ func proxyServer(proxyAddr *proxyAddr, w http.ResponseWriter, r *http.Request) {
 	} else {
 		defer response.Body.Close()
 		//处理代理原样返回给客户端
-		w.WriteHeader(response.StatusCode)
 		for k, v := range response.Header {
+			fmt.Println("header:", k, v)
 			for _, vs := range v {
 				w.Header().Add(k, vs)
 			}
 		}
+		//go的要写在w.Header().Add之后
+		w.WriteHeader(response.StatusCode)
 		//启用代理详情 记录 详情 请求
 		if proxyDetailGridData != nil {
 			buf := new(bytes.Buffer)
