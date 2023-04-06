@@ -245,7 +245,7 @@ var (
 
 //代理日志grid添加一行
 func (m *TGUIForm) proxyLogsGridAdd(proxyDetail *entity.ProxyDetail) {
-	lcl.QueueAsyncCall(func(id int) {
+	lcl.ThreadSync(func() {
 		m.proxyLogsGridCountRow = proxyDetail.ID + 1
 		//在指定行插入行
 		m.proxyLogsGrid.InsertColRow(false, logGridInsertRow)

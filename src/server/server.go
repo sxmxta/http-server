@@ -6,7 +6,7 @@ import (
 	"gitee.com/snxamdf/http-server/src/common"
 	"gitee.com/snxamdf/http-server/src/config"
 	"gitee.com/snxamdf/http-server/src/entity"
-	"github.com/energye/golcl/emfs"
+	"github.com/energye/golcl/energy/emfs"
 	"github.com/energye/golcl/lcl/types/colors"
 	"io/ioutil"
 	"net/http"

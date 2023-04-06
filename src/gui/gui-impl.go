@@ -175,7 +175,7 @@ func (m *TGUIForm) showHIde() {
 }
 
 func LogsColor(color int32, message string) {
-	lcl.QueueAsyncCall(func(id int) {
+	lcl.ThreadSync(func() {
 		if color >= 0 {
 			GUIForm.logs.SetSelStart(GUIForm.logs.GetTextLen())
 			GUIForm.logs.SetSelLength(int32(strings.Count(message, "")))

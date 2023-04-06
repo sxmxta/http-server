@@ -5,7 +5,7 @@ import (
 	"gitee.com/snxamdf/http-server/src/entity"
 	"gitee.com/snxamdf/http-server/src/gui"
 	"gitee.com/snxamdf/http-server/src/server"
-	"github.com/energye/golcl/inits"
+	"github.com/energye/golcl/energy/inits"
 	"github.com/energye/golcl/lcl"
 	"github.com/energye/golcl/lcl/types/colors"
 )

@@ -3,9 +3,9 @@ module gitee.com/snxamdf/http-server
 go 1.17
 
 require (
-	github.com/energye/golcl v0.0.0-20221024100207-844863c6a85e
-	gorm.io/driver/sqlite v1.4.3
-	gorm.io/gorm v1.24.0
+	github.com/energye/golcl v0.0.0-20230221030031-f70c394ea7a4
+	gorm.io/driver/sqlite v1.4.4
+	gorm.io/gorm v1.24.6
 )
 
 require (
